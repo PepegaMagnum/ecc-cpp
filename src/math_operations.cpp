@@ -1,4 +1,4 @@
-#include "math_operations.h"
+#include "../include/math_operations.h"
 
 uint32_t modInv(uint32_t* a, uint32_t* m){
     if(std::__gcd(*a, *m) > 1){

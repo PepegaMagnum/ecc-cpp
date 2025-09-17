@@ -1,5 +1,5 @@
 #include <iostream>
-#include "math_operations/math_operations.h"
+#include "include/math_operations.h"
 
 int main() {
     uint32_t a = 83, b = 202 , fz = 283, m = 8;
