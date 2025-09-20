@@ -5,4 +5,7 @@ project(ecc-cpp)
 
 add_executable(ecc-cpp include/math_operations.h src/math_operations.cpp main.cpp
         src/Point.cpp
+        src/Curve.cpp
+        include/Curve.h
+        include/Point.h
 )

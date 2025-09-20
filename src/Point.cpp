@@ -3,26 +3,18 @@
 //
 
 #include <iostream>
+#include "../include/Point.h"
 
-class Point
+Point::Point(const uint32_t a_x, const uint32_t a_y) : m_x(a_x), m_y(a_y)
 {
-    uint32_t m_x { 0 };
-    uint32_t m_y { 0 };
-public:
+    std::cout <<"(" << m_x << ", " << m_y << ") Point constructed\n";
+}
 
-    Point() = default;
-
-    Point(const uint32_t a_x, const uint32_t a_y) : m_x(a_x), m_y(a_y) {}
-    void print() const
-    {
-        std::cout <<"(" << m_x << "," << m_y << ")";
-    }
-    uint32_t getX() const {return m_x;}
-    void setX(uint32_t x) {m_x = x;}
-
-    uint32_t getY() const {return m_y;}
-    void setY(uint32_t y) {m_y = y;}
+void Point::print() const
+{
+    std::cout <<"(" << m_x << "," << m_y << ")";
+}
 
 
 
-};
+
