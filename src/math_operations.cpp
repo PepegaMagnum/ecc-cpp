@@ -1,122 +1,89 @@
 #include "../include/math_operations.h"
 
-uint32_t modInv(uint32_t a, uint32_t m){
-    if(std::__gcd(a, m) > 1){
-        return -1;
-    }
+std::vector<std::bitset<32>> binAdd(std::vector<std::bitset<32>>  &a, std::vector<std::bitset<32>>  &b, uint32_t m){
+    std::vector<std::bitset<32>> result;
+    const auto t = ceil(double(m) / 32);
+    result.reserve(static_cast<int>(t));
 
-    for(int x = 1 ; x < m ; x++){
-        if( (a % m) * (x % m) % m == 1){
-            return x;
-        }
-    }
-}
-
-uint32_t binAdd(uint32_t a, uint32_t b){
-    return a^b;
-}
-
-uint32_t binMult(uint32_t a, uint32_t b){
-    std::bitset<32> binA, binB, binC;
-
-    binA = a;
-    binB = b;
-
-    if (binA[0] == 1)
-        binC = b;
-    else if (binA[0] == 0)
+    for (int i = 0 ; i < t ; i++)
     {
-        binC = 0;
+        std::cout <<i;
+        result[i] = a[i] ^ b[i];
     }
-
-    //std::cout <<"binA: " <<binA << " binB: " << binB 
-    //<< " binC " <<binC <<std::endl;
-
-    for(int i = 1; i < binA.size(); i++){
-        binB = binB << 1;
-
-        //std::cout <<"iteration: " <<i <<std::endl;
-
-        //std::cout <<"binB " <<binB <<std::endl;
-        if (binA[i] == 1)
-            binC = binC ^ binB;
-        
-        //std::cout <<"binC "<<binC <<std::endl;
-            
-    }
-
-    return binC.to_ullong();
+    // std::cout<< result[0] <<std::endl;
+    return result;
 }
 
-uint32_t binSquare(uint32_t a){
-    std::bitset<32> binA;
-    std::bitset<32> binC;
+std::vector<std::bitset<32>> binMult(std::vector<std::bitset<32>> &a, std::vector<std::bitset<32>> &b, uint32_t m)
+{
+    const auto t = ceil(double(m) / 32);
+    std::cout <<t <<std::endl;
+    auto b_copy = b;
+    std::vector<std::bitset<32>> result(t, std::bitset<32>(0));
 
-    binA = a;
-
-    if (binA[31] == 1)
-        binC = 1;
-    else if (binA[31] == 0)
+    for (int k = 0 ; k < 32 ; k++)
     {
-        binC = 0;
-    }
+        for (int j = 0; j < t ; j++)
+        {
+            if (a[j][k] == 1)
+            {
+                if (result[j] == 0)
+                    result[j] = b_copy[j];
+                else
+                    result[j] = result[j] ^ b_copy[j];
+            }
 
-    int shiftCnt;
-    for(int k = binA.size() - 1; k >= 0; k--){
-        if (binA[k] == 1){
-            shiftCnt = k;
-            break;
-        } 
-    }
-
-    //std::cout << shiftCnt <<std::endl;
-
-    for (int i = 1; i <= shiftCnt + 1 ; i++){
-        binC = binC << 2;
-        if (binA[i] == 1)
-            binC ^= 1;
-    }
-    return binC.to_ullong();
-}
-
-uint32_t binInv(uint32_t a, uint32_t f){
-    uint32_t u = a;
-    uint32_t v = f;
-    int j;
-    uint32_t zj;
-    uint32_t zjv;
-    uint32_t zjg2;
-
-    uint32_t g1 = 1;
-    uint32_t g2 = 0;
-
-    while (u != 1){
-        j = std::__bit_width(u) - std::__bit_width(v);
-        //std::cout <<std::__bit_width(u) 
-        //    << " - " <<std::__bit_width(v) <<" = " <<j <<std::endl;
-        if(j < 0){
-            std::swap(u,v);
-            std::swap(g1,g2);
-            j = -j;
-        }
-        zj = 1 << j;
-        zjv = binMult(zj, v);
-        u = binAdd(u, zjv);
-        //std::cout <<std::bitset<32>(u) <<std::endl;
-        zjg2 = binMult(zj, g2);
-        g1 = binAdd(g1, zjg2);
-    }
-
-    return g1; 
-}
-
-uint32_t binReduc(uint32_t c, uint32_t fz, uint32_t m){
-    uint32_t k;
-    for(int i = 32; i --> m-1;){
-        if( (c & (1<<i)) >> i == 1){
-            k = i-m;
-            c = c^(fz<<k);
+            if (k != 31)
+                b_copy[j] = b_copy[j] << 1;
         }
     }
-    return c;
+    return result;
+}
+
+std::bitset<16> expandBits(const std::bitset<8>& bits) {
+    std::bitset<16> result;
+    for (int i = 0; i < 8; ++i) {
+        result[2 * i] = bits[i];  // copy each bit to every other position
+    }
+    return result;
+}
+
+std::vector<std::bitset<16>> computeExpansionTable() {
+    std::vector<std::bitset<16>> table(256);
+
+    for (int i = 0; i < 256; ++i) {
+        std::bitset<8> input(i);
+        table[i] = expandBits(input);
+    }
+
+    return table;
+}
+
+std::bitset<32> concat16Bitset(std::bitset<16> &a, std::bitset<16> &b)
+{
+    return std::bitset<32>(a.to_string() + b.to_string());
+}
+
+std::vector<std::bitset<32>> binSquare(std::vector<std::bitset<32>> &a, std::vector<std::bitset<16>> &preComputedTable)
+{
+    uint32_t t = a.size();
+    std::vector<std::bitset<32>> result(2*t);
+
+    for (int i=0; i < t; i++)
+    {
+        std::vector<std::bitset<8>> temp(4);
+        for (int j = 0; j < 4; j++)
+        {
+            for (int k = 0; k < 8; k++)
+            {
+                temp[j][k] = a[i][j*8 + k];
+            }
+        }
+        result[2*i] = concat16Bitset(preComputedTable[temp[1].to_ulong()],
+            preComputedTable[temp[0].to_ulong()]);
+        result[2*i+1] = concat16Bitset(preComputedTable[temp[3].to_ulong()],
+            preComputedTable[temp[2].to_ulong()]);
+
+    }
+    return result;
 }

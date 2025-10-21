@@ -6,11 +6,12 @@
 #include <bitset>
 #include <array>
 
-uint32_t modInv(uint32_t a, uint32_t m);
-uint32_t binAdd(uint32_t a, uint32_t b);
-uint32_t binMult(uint32_t a, uint32_t b);
-uint32_t binSquare(uint32_t a);
-uint32_t binInv(uint32_t a, uint32_t f);
-uint32_t binReduc(uint32_t c, uint32_t fz, uint32_t m);
+std::vector<std::bitset<32>> binAdd(std::vector<std::bitset<32>>  &a, std::vector<std::bitset<32>>  &b, uint32_t m);
+
+std::vector<std::bitset<32>> binMult(std::vector<std::bitset<32>> &a, std::vector<std::bitset<32>> &b, uint32_t m);
+std::vector<std::bitset<32>> binSquare(std::vector<std::bitset<32>> &a, std::vector<std::bitset<16>> &preComputedTable);
+std::vector<std::bitset<16>> computeExpansionTable();
+// uint32_t binInv(uint32_t a, uint32_t f);
+// uint32_t binReduc(uint32_t c, uint32_t fz, uint32_t m);
 
 #endif
