@@ -11,12 +11,14 @@ int main() {
 
     std::vector<std::bitset<32>> a(t, std::bitset<32>(0));
     std::vector<std::bitset<32>> b(t, std::bitset<32>(0));
-
+    std::vector<std::bitset<32>> fz(t, std::bitset<32>(0));
     a.reserve(1);
     b.reserve(1);
+    fz.reserve(1);
 
     a[0] = std::bitset<W>(83);
     b[0] = std::bitset<W>(202);
+    fz[0] = std::bitset<W>(283);
 
     auto addResult = binAdd(a, b, m);
 
@@ -28,8 +30,10 @@ int main() {
     auto precomputedTable = computeExpansionTable();
     auto aSquared = binSquare(a, precomputedTable);
     std::cout << "Binary Square of " <<a[0] <<" is " << aSquared[1] <<aSquared[0] <<std::endl;
-    // std:: cout << "Reducing " <<std::bitset<32>(mulres) <<" by "
-    //     << std::bitset<32>(fz) << " equals " <<binReduc(mulres, fz, m) <<std::endl;
+    std:: cout << "Reducing " << mulres[0] <<" by "
+         << fz[0] << " equals ";
+    binReduc(mulres, fz, m);
+    std::cout << mulres[0] <<std::endl;
     // std::cout << "Inversion of " << b <<" " << fz <<" is " <<binInv(b, fz) <<std::endl;
     //
     // uint32_t f = (1<<163) + std::stoi("11001001");
