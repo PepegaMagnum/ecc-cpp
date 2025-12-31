@@ -36,7 +36,7 @@ int main() {
     std::cout << mulres[0] <<std::endl;
 
     bitset32Vec invB = binInv(b, fz, m);
-    std::cout << "Inversion of " << b[0] <<" " << fz[0] <<" is " <<std::endl;
+    std::cout << "Inversion of " << b[0] <<" " << fz[0] <<" is " <<invB[0] <<std::endl;
     //
     // uint32_t f = (1<<163) + std::stoi("11001001");
     // std::cout << "f in int: " <<f <<std::endl;

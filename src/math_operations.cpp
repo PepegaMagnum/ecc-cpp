@@ -192,7 +192,7 @@ bitset32Vec generateZJ(uint32_t j, uint32_t m) {
     const auto t = ceil(double(m) / 32);
     z.reserve(static_cast<int>(t));
     z.emplace_back(1);
-    for (int i = 1 ; i < j ; i++) {
+    for (int i = 0 ; i < j ; i++) {
         shiftBitsetVectorLeft(z);
     }
     return z;
@@ -221,30 +221,25 @@ bitset32Vec binInv(bitset32Vec &a, bitset32Vec fz, uint32_t m) {
         std::cout <<"j  = " <<j<<std::endl;
 
         if (j < 0) {
-            swap(u,v);
-            swap(g1,g2);
+            std::swap(u,v);
+            std::swap(g1,g2);
             j = -j;
         }
 
         bitset32Vec zj = generateZJ(j, m);
-        //
-        // std::cout <<"zj = " <<zj[0] <<std::endl;
-        // std::cout <<"v  = " <<v[0] <<std::endl;
-        // std::cout <<"g2 = " <<g2[0] <<std::endl;
+
+        std::cout <<"zj   = " <<zj[0] <<std::endl;
 
         bitset32Vec zjv = binMult(zj, v, m);
+        std::cout <<"zjv  = " <<zjv[0] <<std::endl;
         // binReduc(zj, fz, m);
 
         bitset32Vec zjg2 = binMult(zj, g2, m);
+        std::cout <<"zjg2 = " <<zjg2[0] <<std::endl;
         // binReduc(zjg2, fz, m);
-        //
-        // std::cout <<"zjv  = " <<zjv[0] <<std::endl;
-        // std::cout <<"zjg2 = " <<zjg2[0] <<std::endl;
 
         u = binAdd(u,zjv, m);
-        // std::cout <<"u  = " <<u[0] <<std::endl;
-        g1 = binAdd(g1,zjg2, m);
-        // std::cout <<"g1 = " <<g1[0] <<std::endl;
+        g1 = binAdd(g1, zjg2, m);
     }
     return g1;
 }
