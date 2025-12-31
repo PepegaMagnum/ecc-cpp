@@ -7,3 +7,7 @@ add_executable(ecc-cpp include/math_operations.h src/math_operations.cpp main.cp
         include/Curve.h
         include/Point.h
 )
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GMPXX REQUIRED IMPORTED_TARGET gmpxx)
+target_link_libraries(ecc-cpp PkgConfig::GMPXX)

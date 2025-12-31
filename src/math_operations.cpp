@@ -1,4 +1,6 @@
 #include "../include/math_operations.h"
+#include <gmpxx.h>
+#include <gmp.h>
 
 bitset32Vec binAdd(bitset32Vec  &a, bitset32Vec  &b, uint32_t m){
     bitset32Vec result;
@@ -8,7 +10,7 @@ bitset32Vec binAdd(bitset32Vec  &a, bitset32Vec  &b, uint32_t m){
     for (int i = 0 ; i < t ; i++)
     {
         //std::cout <<i;
-        result[i] = a[i] ^ b[i];
+        result.push_back(a[i] ^ b[i]);
     }
     // std::cout<< result[0] <<std::endl;
     return result;
@@ -143,4 +145,106 @@ void binReduc(bitset32Vec &a, bitset32Vec fz, uint32_t m) {
             }
         }
     }
+}
+
+std::vector<uint32_t> bitsets_to_words(const std::vector<std::bitset<32>>& bits) {
+    std::vector<uint32_t> words(bits.size());
+
+    for (size_t i = 0; i < bits.size(); ++i) {
+        words[i] = static_cast<uint32_t>(bits[i].to_ulong());
+    }
+
+    return words;
+}
+
+mpz_class bitset_vector_to_mpz(const std::vector<std::bitset<32>>& bits) {
+    std::vector<uint32_t> words = bitsets_to_words(bits);
+
+    mpz_class result;
+    mpz_import(
+        result.get_mpz_t(),
+        words.size(),          // number of words
+        -1,                    // order: least significant word first
+        sizeof(uint32_t),      // word size
+        0,                     // native endianness
+        0,                     // no nails
+        words.data()
+    );
+
+    return result;
+}
+
+int degree(const std::vector<std::bitset<32>>& poly) {
+    for (size_t w = poly.size(); w-- > 0; ) {
+        if (poly[w].any()) {
+            for (size_t b = 32; b-- > 0; ) {
+                if (poly[w].test(b)) {
+                    return static_cast<int>(w * 32 + b);
+                }
+            }
+        }
+    }
+    return -1;  // zero polynomial
+}
+
+bitset32Vec generateZJ(uint32_t j, uint32_t m) {
+    bitset32Vec z;
+    const auto t = ceil(double(m) / 32);
+    z.reserve(static_cast<int>(t));
+    z.emplace_back(1);
+    for (int i = 1 ; i < j ; i++) {
+        shiftBitsetVectorLeft(z);
+    }
+    return z;
+}
+
+bitset32Vec binInv(bitset32Vec &a, bitset32Vec fz, uint32_t m) {
+    bitset32Vec u = a;
+    bitset32Vec v = fz;
+
+    bitset32Vec g1;
+    bitset32Vec g2;
+
+    g1.emplace_back(1);
+    g2.emplace_back(0);
+
+    while (bitset_vector_to_mpz(u) != 1) {
+        std::cout <<"integer u = "<< bitset_vector_to_mpz(u) <<std::endl;
+        std::cout <<"g1  = " <<g1[0] <<std::endl;
+        std::cout <<"g2  = " <<g2[0] <<std::endl;
+        std::cout <<"u   = " <<u[0] <<std::endl;
+        std::cout <<"v   = " <<v[0] <<std::endl;
+
+        int j = degree(u) - degree(v);
+        std::cout <<"deg(u) = " <<degree(u) <<std::endl;
+        std::cout <<"deg(v) = " <<degree(v) <<std::endl;
+        std::cout <<"j  = " <<j<<std::endl;
+
+        if (j < 0) {
+            swap(u,v);
+            swap(g1,g2);
+            j = -j;
+        }
+
+        bitset32Vec zj = generateZJ(j, m);
+        //
+        // std::cout <<"zj = " <<zj[0] <<std::endl;
+        // std::cout <<"v  = " <<v[0] <<std::endl;
+        // std::cout <<"g2 = " <<g2[0] <<std::endl;
+
+        bitset32Vec zjv = binMult(zj, v, m);
+        // binReduc(zj, fz, m);
+
+        bitset32Vec zjg2 = binMult(zj, g2, m);
+        // binReduc(zjg2, fz, m);
+        //
+        // std::cout <<"zjv  = " <<zjv[0] <<std::endl;
+        // std::cout <<"zjg2 = " <<zjg2[0] <<std::endl;
+
+        u = binAdd(u,zjv, m);
+        // std::cout <<"u  = " <<u[0] <<std::endl;
+        g1 = binAdd(g1,zjg2, m);
+        // std::cout <<"g1 = " <<g1[0] <<std::endl;
+    }
+    return g1;
 }
