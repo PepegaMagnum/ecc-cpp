@@ -2,6 +2,7 @@
 #define MATH_OPERATIONS_H
 
 #include <bits/stdc++.h>
+#include <gmp.h>
 #include <bitset>
 
 typedef std::vector<std::bitset<32>> bitset32Vec;
@@ -13,6 +14,6 @@ bitset32Vec binSquare(bitset32Vec &a, bitset16Vec &preComputedTable);
 bitset16Vec computeExpansionTable();
 void binReduc(bitset32Vec &a, bitset32Vec fz, uint32_t m);
 bitset32Vec binInv(bitset32Vec &a, bitset32Vec fz, uint32_t m);
-
+void mpz_to_bitset32Vec(const mpz_t mpz_value, bitset32Vec& bitsetVec);
 
 #endif

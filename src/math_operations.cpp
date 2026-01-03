@@ -200,7 +200,7 @@ bitset32Vec generateZJ(uint32_t j, uint32_t m) {
 
 bitset32Vec binInv(bitset32Vec &a, bitset32Vec fz, uint32_t m) {
     bitset32Vec u = a;
-    bitset32Vec v = fz;
+    bitset32Vec v = std::move(fz);
 
     bitset32Vec g1;
     bitset32Vec g2;
@@ -209,16 +209,7 @@ bitset32Vec binInv(bitset32Vec &a, bitset32Vec fz, uint32_t m) {
     g2.emplace_back(0);
 
     while (bitset_vector_to_mpz(u) != 1) {
-        std::cout <<"integer u = "<< bitset_vector_to_mpz(u) <<std::endl;
-        std::cout <<"g1  = " <<g1[0] <<std::endl;
-        std::cout <<"g2  = " <<g2[0] <<std::endl;
-        std::cout <<"u   = " <<u[0] <<std::endl;
-        std::cout <<"v   = " <<v[0] <<std::endl;
-
         int j = degree(u) - degree(v);
-        std::cout <<"deg(u) = " <<degree(u) <<std::endl;
-        std::cout <<"deg(v) = " <<degree(v) <<std::endl;
-        std::cout <<"j  = " <<j<<std::endl;
 
         if (j < 0) {
             std::swap(u,v);
@@ -227,19 +218,40 @@ bitset32Vec binInv(bitset32Vec &a, bitset32Vec fz, uint32_t m) {
         }
 
         bitset32Vec zj = generateZJ(j, m);
-
-        std::cout <<"zj   = " <<zj[0] <<std::endl;
-
         bitset32Vec zjv = binMult(zj, v, m);
-        std::cout <<"zjv  = " <<zjv[0] <<std::endl;
-        // binReduc(zj, fz, m);
-
         bitset32Vec zjg2 = binMult(zj, g2, m);
-        std::cout <<"zjg2 = " <<zjg2[0] <<std::endl;
-        // binReduc(zjg2, fz, m);
 
         u = binAdd(u,zjv, m);
         g1 = binAdd(g1, zjg2, m);
     }
     return g1;
+}
+
+void mpz_to_bitset32Vec(const mpz_t mpz_value, bitset32Vec& bitsetVec) {
+    size_t bitCount = mpz_sizeinbase(mpz_value, 2);
+    size_t wordCount = (bitCount + 32 - 1) / 32;
+
+    std::vector<uint32_t> words(wordCount, 0);
+
+    mpz_export(
+        words.data(),
+        nullptr,
+        -1,
+        sizeof(uint32_t),
+        0,
+        0,
+        mpz_value
+        );
+    std::vector<std::bitset<32>> result(wordCount);
+    for (size_t i = 0; i < wordCount; ++i) {
+        result[i] = std::bitset<32>(words[i]);
+    }
+    bitsetVec = result;
+}
+
+void hex_string_to_mpz(mpz_t result, const char* hex_str) {
+    // Base 16 for hexadecimal
+    if (mpz_set_str(result, hex_str, 16) != 0) {
+        throw std::invalid_argument("Invalid hexadecimal string");
+    }
 }

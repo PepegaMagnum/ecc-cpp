@@ -10,14 +10,14 @@
 
 class Curve
 {
-    uint32_t m_a;
-    uint32_t m_b;
-    uint32_t m_m;
-    uint32_t m_fz;
+    bitset32Vec m_a;
+    bitset32Vec m_b;
+    bitset32Vec m_m;
+    bitset32Vec m_fz;
 
 public:
     Curve() = default;
-    Curve(uint32_t a, uint32_t b, uint32_t m, uint32_t fz);
+    Curve(mpz_t a, mpz_t b, mpz_t m, bitset32Vec fz);
     bool isPointOnCurve(Point p);
     Point pointAddition(Point P, Point Q);
     Point pointDoubling(Point P);

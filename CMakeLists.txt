@@ -6,6 +6,7 @@ project(ecc-cpp)
 add_executable(ecc-cpp include/math_operations.h src/math_operations.cpp main.cpp
         include/Curve.h
         include/Point.h
+        src/Point.cpp
 )
 
 find_package(PkgConfig REQUIRED)
