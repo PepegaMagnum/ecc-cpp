@@ -1,8 +1,6 @@
 #include "../include/math_operations.h"
-#include <gmpxx.h>
-#include <gmp.h>
 
-bitset32Vec binAdd(bitset32Vec  &a, bitset32Vec  &b, uint32_t m){
+bitset32Vec binAdd(bitset32Vec  a, bitset32Vec  b, uint32_t m){
     bitset32Vec result;
     const auto t = ceil(double(m) / 32);
     result.reserve(static_cast<int>(t));
@@ -50,8 +48,8 @@ std::bitset<16> expandBits(const std::bitset<8>& bits) {
     return result;
 }
 
-std::vector<std::bitset<16>> computeExpansionTable() {
-    std::vector<std::bitset<16>> table(256);
+bitset16Vec computeExpansionTable() {
+    bitset16Vec table(256);
 
     for (int i = 0; i < 256; ++i) {
         std::bitset<8> input(i);
@@ -66,7 +64,7 @@ std::bitset<32> concat16Bitset(std::bitset<16> &a, std::bitset<16> &b)
     return std::bitset<32>(a.to_string() + b.to_string());
 }
 
-bitset32Vec binSquare(bitset32Vec &a, std::vector<std::bitset<16>> &preComputedTable)
+bitset32Vec &binSquare(bitset32Vec &a, std::vector<std::bitset<16> > &preComputedTable)
 {
     uint32_t t = a.size();
     bitset32Vec result(2*t);

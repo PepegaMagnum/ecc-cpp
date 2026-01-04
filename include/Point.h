@@ -16,12 +16,13 @@ public:
 
     Point(const bitset32Vec& a_x, const bitset32Vec& a_y);
     Point(const mpz_t a_x, const mpz_t a_y);
+    Point(const char* hex_x, const char* hex_y);
     void print() const;
 
-    [[nodiscard]] bitset32Vec getX() const {return m_x;}
+    [[nodiscard]] bitset32Vec getX() {return m_x;}
     void setX(const bitset32Vec& x) {m_x = x;}
 
-    [[nodiscard]] bitset32Vec getY() const {return m_y;}
+    [[nodiscard]] bitset32Vec getY() {return m_y;}
     void setY(const bitset32Vec& y) {m_y = y;}
 
 };
