@@ -64,7 +64,7 @@ std::bitset<32> concat16Bitset(std::bitset<16> &a, std::bitset<16> &b)
     return std::bitset<32>(a.to_string() + b.to_string());
 }
 
-bitset32Vec &binSquare(bitset32Vec &a, std::vector<std::bitset<16> > &preComputedTable)
+bitset32Vec binSquare(bitset32Vec &a, std::vector<std::bitset<16> > &preComputedTable)
 {
     uint32_t t = a.size();
     bitset32Vec result(2*t);
@@ -112,37 +112,50 @@ void shiftBitsetVectorLeft(bitset32Vec& v) {
 
 std::vector<bitset32Vec> precomputeUK (bitset32Vec fz, uint32_t m) {
     bitset32Vec rz = fz;
+    // printBitset32Vec(rz);
     const auto t = static_cast<int>(ceil(double(m) / 32));
-    rz[t][m%32] = false;
+    rz[t-1][m%32] = false;
+    // printBitset32Vec(rz);
     std::vector<bitset32Vec> uk;
     bitset32Vec zk;
     zk.emplace_back(1);
+    // printBitset32Vec(zk);
 
     uk.push_back(binMult(zk, rz, m));
 
     for (int i = 1 ; i < 32 ; i++) {
         shiftBitsetVectorLeft(zk);
+        // printBitset32Vec(zk);
         uk.push_back(binMult(zk, rz, m));
     }
 
     return uk;
 }
 
-void binReduc(bitset32Vec &a, bitset32Vec fz, uint32_t m) {
+bitset32Vec binReduc(bitset32Vec &a, bitset32Vec fz, uint32_t m) {
+    std::cout <<"Reducing: ";
+    printBitset32Vec(a);
     std::vector<bitset32Vec> uk = precomputeUK(fz, m);
-    bitset32Vec result;
+    // printBitset32Vec(fz);
     const auto t = ceil(double(m) / 32);
-    result.reserve(static_cast<int>(t));
 
-    for (int l = t; l >= 0; l--) {
-        for (int i = 2*(m-1); i >= m; i--) {
-            if (a[l][i % 32] == true) {
-                int j = floor((i-m)/32);
-                int k = (i-m) - 32*j;
-                a = binAdd(a, uk[k], 2*(m-1));
-            }
+    for (int i = 2*(m-1); i >= m; i--) {
+        std::cout <<"Bit: " <<i <<std::endl;
+        printBitset32Vec(a);
+        size_t vector_idx = i / 32;
+        size_t bit_idx = i % 32;
+        if (a[vector_idx][bit_idx] == true) {
+            int j = floor((i-m)/32);
+            int k = (i-m) - 32*j;
+            std::cout <<"j: " <<j <<std::endl;
+            std::cout <<"k: " <<k <<std::endl;
+            std::cout <<"uk  : " <<uk[k][0] <<std::endl;
+            std::cout <<"a{j}: " <<a[j] << std::endl;
+            a[j] = a[j] ^ uk[k][0];
         }
     }
+    std::vector result(a.begin(), a.begin() + t);
+    return result;
 }
 
 std::vector<uint32_t> bitsets_to_words(const std::vector<std::bitset<32>>& bits) {
@@ -168,7 +181,6 @@ mpz_class bitset_vector_to_mpz(const std::vector<std::bitset<32>>& bits) {
         0,                     // no nails
         words.data()
     );
-
     return result;
 }
 
@@ -252,4 +264,12 @@ void hex_string_to_mpz(mpz_t result, const char* hex_str) {
     if (mpz_set_str(result, hex_str, 16) != 0) {
         throw std::invalid_argument("Invalid hexadecimal string");
     }
+}
+
+void printBitset32Vec(const bitset32Vec& bitsetVec) {
+    for (int i = bitsetVec.size(); i >= 0 ; i--) {
+        //std::cout <<"[" <<i <<"] :" << bitsetVec[i] << std::endl;
+        std::cout << bitsetVec[i];
+    }
+    std::cout << std::endl;
 }

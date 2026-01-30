@@ -7,6 +7,9 @@
 #include "../include/Curve.h"
 
 Curve::Curve(mpz_t a, mpz_t b, uint32_t m, mpz_t fz) {
+
+    const auto t = ceil(double(m) / 32);
+
     mpz_to_bitset32Vec(a, m_a);
     mpz_to_bitset32Vec(b, m_b);
     mpz_to_bitset32Vec(fz, m_fz);
@@ -25,20 +28,39 @@ Curve::Curve(bitset32Vec a, bitset32Vec b, uint32_t m, bitset32Vec fz) {
 bool Curve::isPointOnCurve(Point p) {
     bitset32Vec x = p.getX();
     bitset32Vec y = p.getY();
-    bitset32Vec y2, x3, xy, x2, ax2;
 
-    y2 = binSquare(y,preCompSquaringTable);
-    binReduc(y2,m_fz,m_m);
-    x3 = binMult(binSquare(x, preCompSquaringTable), x, m_m);
-    binReduc(x3,m_fz,m_m);
-    x2 = binSquare(x, preCompSquaringTable);
-    binReduc(x2,m_fz,m_m);
-    ax2 = binMult(m_a,x2,m_m);
-    binReduc(ax2,m_fz,m_m);
+    bitset32Vec y2 = binSquare(y, preCompSquaringTable);
 
-    bitset32Vec eq = binAdd(binAdd(binAdd(binAdd(y2,xy, m_m), x3, m_m), ax2, m_m), m_b, m_m);
-    if (bitset_vector_to_mpz(eq) == 0) {
-        return true;
-    }
+    y2 = binReduc(y2,m_fz,m_m);
+    std::cout <<"y2: ";
+    printBitset32Vec(y2);
+    //
+    // bitset32Vec xy = binMult(x, y, m_m);
+    // xy = binReduc(xy,m_fz,m_m);
+    //
+    // bitset32Vec x2 = binSquare(x, preCompSquaringTable);
+    // x2 = binReduc(x2,m_fz,m_m);
+    //
+    // bitset32Vec x3 = binMult(x2, x, m_m);
+    // x3 = binReduc(x3,m_fz,m_m);
+    //
+    // bitset32Vec ax2 = binMult(m_a, x2, m_m);
+    // ax2 = binReduc(ax2,m_fz,m_m);
+    //
+    // bitset32Vec leftSideEq = binAdd(y2,xy, m_m);
+    // bitset32Vec rightSideEq = binAdd(binAdd(x3,x2, m_m), m_b, m_m);
+
+    //printBitset32Vec(y2);
+    // printBitset32Vec(x3);
+    // printBitset32Vec(xy);
+    // printBitset32Vec(x2);
+    // printBitset32Vec(ax2);
+    //
+    // printBitset32Vec(leftSideEq);
+    // printBitset32Vec(rightSideEq);
+    //
+    // if ( bitset_vector_to_mpz(leftSideEq) == bitset_vector_to_mpz(rightSideEq) ) {
+    //     return true;
+    // }
     return false;
 }

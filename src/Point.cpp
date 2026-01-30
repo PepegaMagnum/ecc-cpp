@@ -20,13 +20,13 @@ void hex_to_mpz(mpz_t out, const char* hex) {
         hex += 2;
     }
 
-    if (mpz_set_str(out, hex, 16) != 0) {
-        throw std::invalid_argument("Invalid hexadecimal string");
-    }
+    mpz_set_str(out, hex, 16);
 }
 
 Point::Point(const char* hex_x, const char* hex_y) {
     mpz_t x, y;
+
+    mpz_inits(x,y, nullptr);
 
     hex_to_mpz(x, hex_x);
     hex_to_mpz(y, hex_y);
