@@ -25,6 +25,9 @@ public:
     // Point pointDoubling(Point P);
     // Point pointMultiplication(Point P, uint32_t a);
 
+    bitset32Vec getFz() {
+        return m_fz;
+    }
 };
 
 

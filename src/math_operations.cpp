@@ -1,5 +1,27 @@
 #include "../include/math_operations.h"
 
+void shiftBitsetVectorRight(bitset32Vec& v) {
+    bool carry = false;
+
+    for (auto it = v.rbegin(); it != v.rend(); ++it) {
+        bool new_carry = (*it)[0]; // LSB
+        *it >>= 1;
+        (*it)[32 - 1] = carry;
+        carry = new_carry;
+    }
+}
+
+void shiftBitsetVectorLeft(bitset32Vec& v) {
+    bool carry = false;
+
+    for (auto& b : v) {
+        bool new_carry = b[32 - 1]; // MSB
+        b <<= 1;
+        b[0] = carry;
+        carry = new_carry;
+    }
+}
+
 bitset32Vec binAdd(bitset32Vec  a, bitset32Vec  b, uint32_t m){
     bitset32Vec result;
     const auto t = ceil(double(m) / 32);
@@ -17,27 +39,25 @@ bitset32Vec binAdd(bitset32Vec  a, bitset32Vec  b, uint32_t m){
 bitset32Vec binMult(bitset32Vec &a, bitset32Vec &b, uint32_t m)
 {
     const auto t = ceil(double(m) / 32);
-    //std::cout <<t <<std::endl;
+    bitset32Vec c;
+
     auto b_copy = b;
-    bitset32Vec result(t, std::bitset<32>(0));
 
-    for (int k = 0 ; k < 32 ; k++)
-    {
-        for (int j = 0; j < t ; j++)
-        {
-            if (a[j][k] == 1)
-            {
-                if (result[j] == 0)
-                    result[j] = b_copy[j];
-                else
-                    result[j] = result[j] ^ b_copy[j];
-            }
+    if (a[0][0] == 1) {
+        c = b;
+    } else {
 
-            if (k != 31)
-                b_copy[j] = b_copy[j] << 1;
+        for (int i = 0 ; i < t ; i++) {
+            c.reserve(static_cast<int>(t));
+            c[i].reset();
         }
     }
-    return result;
+    for (int i = 1 ; i < m ; i++) {
+        shiftBitsetVectorLeft(b_copy);
+        if (a[i/32][i%32] == 1) {
+            c = binAdd(c,b,m);
+        }
+    }
 }
 
 std::bitset<16> expandBits(const std::bitset<8>& bits) {
@@ -88,69 +108,66 @@ bitset32Vec binSquare(bitset32Vec &a, std::vector<std::bitset<16> > &preComputed
     return result;
 }
 
-void shiftBitsetVectorRight(bitset32Vec& v) {
-    bool carry = false;
-
-    for (auto it = v.rbegin(); it != v.rend(); ++it) {
-        bool new_carry = (*it)[0]; // LSB
-        *it >>= 1;
-        (*it)[32 - 1] = carry;
-        carry = new_carry;
-    }
-}
-
-void shiftBitsetVectorLeft(bitset32Vec& v) {
-    bool carry = false;
-
-    for (auto& b : v) {
-        bool new_carry = b[32 - 1]; // MSB
-        b <<= 1;
-        b[0] = carry;
-        carry = new_carry;
-    }
-}
-
 std::vector<bitset32Vec> precomputeUK (bitset32Vec fz, uint32_t m) {
     bitset32Vec rz = fz;
     // printBitset32Vec(rz);
     const auto t = static_cast<int>(ceil(double(m) / 32));
-    rz[t-1][m%32] = false;
-    // printBitset32Vec(rz);
+    rz[m/32][m%32] = false;
+    printBitset32Vec(rz);
     std::vector<bitset32Vec> uk;
     bitset32Vec zk;
     zk.emplace_back(1);
-    // printBitset32Vec(zk);
+    printBitset32Vec(zk);
+
+    printBitset32Vec(binMult(zk, rz, m));
 
     uk.push_back(binMult(zk, rz, m));
 
     for (int i = 1 ; i < 32 ; i++) {
         shiftBitsetVectorLeft(zk);
-        // printBitset32Vec(zk);
+        //printBitset32Vec(zk);
         uk.push_back(binMult(zk, rz, m));
+        printBitset32Vec(uk[i]);
     }
 
     return uk;
 }
 
-bitset32Vec binReduc(bitset32Vec &a, bitset32Vec fz, uint32_t m) {
-    std::cout <<"Reducing: ";
+bitset32Vec binReduc(bitset32Vec &a, bitset32Vec fz, uint32_t m, bool debug) {
+    std::cout <<"Reducing: " <<std::endl;
     printBitset32Vec(a);
+    std::cout << "Reduction polynomial" << std::endl;
+    printBitset32Vec(fz);
+    std::cout <<std::endl;
     std::vector<bitset32Vec> uk = precomputeUK(fz, m);
-    // printBitset32Vec(fz);
-    const auto t = ceil(double(m) / 32);
+    for (int i = 0; i < uk.size(); i++) {
+        std::cout <<i <<": ";
+        printBitset32Vec(uk[i]);
+    }
 
+    const auto t = ceil(double(m) / 32);
+    bitset32Vec fz_tmp;
     for (int i = 2*(m-1); i >= m; i--) {
-        std::cout <<"Bit: " <<i <<std::endl;
-        printBitset32Vec(a);
+        if (debug) {
+            std::cout <<"Bit: " <<i <<std::endl;
+            printBitset32Vec(a, true);
+        }
         size_t vector_idx = i / 32;
         size_t bit_idx = i % 32;
+
+        // std::cout << "Vector: " <<vector_idx <<std::endl;
+        // std::cout <<"Bit: " <<bit_idx <<std::endl;
+
         if (a[vector_idx][bit_idx] == true) {
+
             int j = floor((i-m)/32);
             int k = (i-m) - 32*j;
-            std::cout <<"j: " <<j <<std::endl;
-            std::cout <<"k: " <<k <<std::endl;
-            std::cout <<"uk  : " <<uk[k][0] <<std::endl;
-            std::cout <<"a{j}: " <<a[j] << std::endl;
+            if (debug) {
+                std::cout <<"j: " <<j <<std::endl;
+                std::cout <<"k: " <<k <<std::endl;
+                std::cout <<"uk  : " <<uk[k][0] <<std::endl;
+                std::cout <<"a{j}: " <<a[j] << std::endl;
+            }
             a[j] = a[j] ^ uk[k][0];
         }
     }
@@ -266,10 +283,15 @@ void hex_string_to_mpz(mpz_t result, const char* hex_str) {
     }
 }
 
-void printBitset32Vec(const bitset32Vec& bitsetVec) {
+void printBitset32Vec(const bitset32Vec& bitsetVec, bool sections) {
     for (int i = bitsetVec.size(); i >= 0 ; i--) {
-        //std::cout <<"[" <<i <<"] :" << bitsetVec[i] << std::endl;
-        std::cout << bitsetVec[i];
+        if (sections) {
+            std::cout <<"[" <<i <<"] :" << bitsetVec[i] << std::endl;
+        } else {
+            std::cout << bitsetVec[i];
+        }
+
+
     }
     std::cout << std::endl;
 }

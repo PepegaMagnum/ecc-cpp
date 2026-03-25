@@ -4,26 +4,26 @@
 #include "include/Curve.h"
 
 int main() {
-    bitset32Vec fz;
 
+    // field parameters
     mpz_t fz_int, a, b;
-    uint32_t m = 163;
+    uint32_t m = 32;
+    bitset32Vec fz;
     mpz_set_ui(fz_int, 1);
-    mpz_set_ui(a, 1);
-    mpz_set_ui(b, 1);
-    mpz_mul_2exp(fz_int, fz_int, 163);
-    mpz_add_ui(fz_int, fz_int, std::stoi("11001001", nullptr, 2));
 
-    // std::cout << fz_int << std::endl;
-    Curve k163 = Curve(a, b, m, fz_int);
+    hex_string_to_mpz(a, "b46574af");
+    hex_string_to_mpz(b, "f6c71ed1");
 
-    Point G = Point("02fe13c0537bbc11acaa07d793de4e6d5e5c94eee8",
-        "0289070fb05d38ff58321f2e800536d538ccdaa3d9");
+    mpz_mul_2exp(fz_int, fz_int, m);
+    mpz_add_ui(fz_int, fz_int, std::stoi("10001101", nullptr, 2));
 
-    k163.isPointOnCurve(G);
+    Curve myCurve = Curve(a, b, m, fz_int);
 
-    // Point g1 = Point(x, y);
-    //
-    // std::cout << "Point g1 is on the Curve: " <<k163.isPointOnCurve(g1) <<std::endl;
+    printBitset32Vec(myCurve.getFz(), true);
+
+    Point G = Point("32682f63","42b5226d");
+
+    std::cout <<myCurve.isPointOnCurve(G);
+
     return 0;
 }
