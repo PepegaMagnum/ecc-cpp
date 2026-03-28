@@ -58,6 +58,7 @@ bitset32Vec binMult(bitset32Vec &a, bitset32Vec &b, uint32_t m)
             c = binAdd(c,b,m);
         }
     }
+    return c;
 }
 
 std::bitset<16> expandBits(const std::bitset<8>& bits) {
@@ -108,42 +109,13 @@ bitset32Vec binSquare(bitset32Vec &a, std::vector<std::bitset<16> > &preComputed
     return result;
 }
 
-std::vector<bitset32Vec> precomputeUK (bitset32Vec fz, uint32_t m) {
-    bitset32Vec rz = fz;
-    // printBitset32Vec(rz);
-    const auto t = static_cast<int>(ceil(double(m) / 32));
-    rz[m/32][m%32] = false;
-    printBitset32Vec(rz);
-    std::vector<bitset32Vec> uk;
-    bitset32Vec zk;
-    zk.emplace_back(1);
-    printBitset32Vec(zk);
-
-    printBitset32Vec(binMult(zk, rz, m));
-
-    uk.push_back(binMult(zk, rz, m));
-
-    for (int i = 1 ; i < 32 ; i++) {
-        shiftBitsetVectorLeft(zk);
-        //printBitset32Vec(zk);
-        uk.push_back(binMult(zk, rz, m));
-        printBitset32Vec(uk[i]);
-    }
-
-    return uk;
-}
-
 bitset32Vec binReduc(bitset32Vec &a, bitset32Vec fz, uint32_t m, bool debug) {
     std::cout <<"Reducing: " <<std::endl;
     printBitset32Vec(a);
     std::cout << "Reduction polynomial" << std::endl;
     printBitset32Vec(fz);
+    bitset32Vec fz_copy;
     std::cout <<std::endl;
-    std::vector<bitset32Vec> uk = precomputeUK(fz, m);
-    for (int i = 0; i < uk.size(); i++) {
-        std::cout <<i <<": ";
-        printBitset32Vec(uk[i]);
-    }
 
     const auto t = ceil(double(m) / 32);
     bitset32Vec fz_tmp;
@@ -159,16 +131,10 @@ bitset32Vec binReduc(bitset32Vec &a, bitset32Vec fz, uint32_t m, bool debug) {
         // std::cout <<"Bit: " <<bit_idx <<std::endl;
 
         if (a[vector_idx][bit_idx] == true) {
-
-            int j = floor((i-m)/32);
-            int k = (i-m) - 32*j;
-            if (debug) {
-                std::cout <<"j: " <<j <<std::endl;
-                std::cout <<"k: " <<k <<std::endl;
-                std::cout <<"uk  : " <<uk[k][0] <<std::endl;
-                std::cout <<"a{j}: " <<a[j] << std::endl;
-            }
-            a[j] = a[j] ^ uk[k][0];
+            fz_copy = fz;
+            for (int j = 0; j < i; j++)
+                shiftBitsetVectorLeft(fz_copy);
+            binAdd(a, fz, 2*m);
         }
     }
     std::vector result(a.begin(), a.begin() + t);
