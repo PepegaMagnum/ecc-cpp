@@ -9,8 +9,8 @@
 typedef std::vector<std::bitset<32>> bitset32Vec;
 typedef std::vector<std::bitset<16>> bitset16Vec;
 
-bitset32Vec binAdd(bitset32Vec  a, bitset32Vec  b, uint32_t m);
-bitset32Vec binMult(bitset32Vec &a, bitset32Vec &b, uint32_t m);
+bitset32Vec binAdd(bitset32Vec  &a, bitset32Vec  &b, uint32_t m);
+bitset32Vec binMult(bitset32Vec &a, bitset32Vec &b, uint32_t m, bool debug = false);
 
 bitset32Vec binSquare(bitset32Vec &a, bitset16Vec &preComputedTable);
 bitset16Vec computeExpansionTable();

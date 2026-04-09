@@ -1,33 +1,28 @@
 #include "../include/math_operations.h"
 
-void shiftBitsetVectorRight(bitset32Vec& v) {
+constexpr size_t WORD_SIZE = 32;
+
+void shiftBitsetVectorLeft(std::vector<std::bitset<WORD_SIZE>>& v, uint32_t t)
+{
     bool carry = false;
 
-    for (auto it = v.rbegin(); it != v.rend(); ++it) {
-        bool new_carry = (*it)[0]; // LSB
-        *it >>= 1;
-        (*it)[32 - 1] = carry;
+    for (size_t i = 0; i < t; ++i)
+    {
+        bool new_carry = v[i][WORD_SIZE - 1];
+
+        v[i] <<= 1;
+        v[i][0] = carry;
+
         carry = new_carry;
     }
 }
 
-void shiftBitsetVectorLeft(bitset32Vec& v) {
-    bool carry = false;
-
-    for (auto& b : v) {
-        bool new_carry = b[32 - 1]; // MSB
-        b <<= 1;
-        b[0] = carry;
-        carry = new_carry;
-    }
-}
-
-bitset32Vec binAdd(bitset32Vec  a, bitset32Vec  b, uint32_t m){
+bitset32Vec binAdd(bitset32Vec  &a, bitset32Vec  &b, uint32_t m){
     bitset32Vec result;
     const auto t = ceil(double(m) / 32);
     result.reserve(static_cast<int>(t));
 
-    for (int i = 0 ; i < t ; i++)
+    for (int i = 0 ; i <= t; i++)
     {
         //std::cout <<i;
         result.push_back(a[i] ^ b[i]);
@@ -36,27 +31,41 @@ bitset32Vec binAdd(bitset32Vec  a, bitset32Vec  b, uint32_t m){
     return result;
 }
 
-bitset32Vec binMult(bitset32Vec &a, bitset32Vec &b, uint32_t m)
+bitset32Vec binMult(bitset32Vec &a, bitset32Vec &b, uint32_t m, bool debug)
 {
     const auto t = ceil(double(m) / 32);
-    bitset32Vec c;
-
+    bitset32Vec c(t);
     auto b_copy = b;
-
-    if (a[0][0] == 1) {
-        c = b;
-    } else {
-
-        for (int i = 0 ; i < t ; i++) {
-            c.reserve(static_cast<int>(t));
-            c[i].reset();
-        }
+    if (debug) {
+        std::cout <<"Multiplying" <<std::endl;
+        std::cout <<"a:" <<std::endl;
+        printBitset32Vec(a, true);
+        std::cout <<"b:" <<std::endl;
+        printBitset32Vec(b, true);
     }
+
+    if (a[0][0] == true) {
+        c = b;
+    }
+
     for (int i = 1 ; i < m ; i++) {
-        shiftBitsetVectorLeft(b_copy);
-        if (a[i/32][i%32] == 1) {
-            c = binAdd(c,b,m);
+        shiftBitsetVectorLeft(b_copy, t+1);
+        if (debug) {
+            std::cout <<"i: " <<i <<std::endl;
+            std::cout <<"B*z mod fz: " <<std::endl;
+            printBitset32Vec(b_copy, true);
+            std::cout <<"c:" <<std::endl;
+            printBitset32Vec(c, true);
         }
+
+        if (a[i/32][i%32] == 1) {
+            c = binAdd(c,b_copy, m);
+            if (debug) {
+                std::cout << "Result" <<std::endl;
+                printBitset32Vec(c, true);
+            }
+        }
+
     }
     return c;
 }
@@ -110,19 +119,21 @@ bitset32Vec binSquare(bitset32Vec &a, std::vector<std::bitset<16> > &preComputed
 }
 
 bitset32Vec binReduc(bitset32Vec &a, bitset32Vec fz, uint32_t m, bool debug) {
-    std::cout <<"Reducing: " <<std::endl;
-    printBitset32Vec(a);
-    std::cout << "Reduction polynomial" << std::endl;
-    printBitset32Vec(fz);
+    if (debug) {
+        std::cout <<"Reducing: " <<std::endl;
+        printBitset32Vec(a);
+        std::cout << "Reduction polynomial" << std::endl;
+        printBitset32Vec(fz);
+        std::cout <<std::endl;
+    }
     bitset32Vec fz_copy;
-    std::cout <<std::endl;
 
     const auto t = ceil(double(m) / 32);
     bitset32Vec fz_tmp;
-    for (int i = 2*(m-1); i >= m; i--) {
+    for (int i = 2*(m-1); i > m-1; i--) {
         if (debug) {
             std::cout <<"Bit: " <<i <<std::endl;
-            printBitset32Vec(a, true);
+            printBitset32Vec(a, false);
         }
         size_t vector_idx = i / 32;
         size_t bit_idx = i % 32;
@@ -131,10 +142,15 @@ bitset32Vec binReduc(bitset32Vec &a, bitset32Vec fz, uint32_t m, bool debug) {
         // std::cout <<"Bit: " <<bit_idx <<std::endl;
 
         if (a[vector_idx][bit_idx] == true) {
+            if (debug)
+                std::cout <<"Adding" <<std::endl;
             fz_copy = fz;
-            for (int j = 0; j < i; j++)
-                shiftBitsetVectorLeft(fz_copy);
-            binAdd(a, fz, 2*m);
+            for (int j = 0; j < i-m; j++) {
+                shiftBitsetVectorLeft(fz_copy, t);
+            }
+            if (debug)
+                printBitset32Vec(fz_copy, false);
+            a = binAdd(a, fz_copy, 2*m);
         }
     }
     std::vector result(a.begin(), a.begin() + t);
@@ -186,7 +202,7 @@ bitset32Vec generateZJ(uint32_t j, uint32_t m) {
     z.reserve(static_cast<int>(t));
     z.emplace_back(1);
     for (int i = 0 ; i < j ; i++) {
-        shiftBitsetVectorLeft(z);
+        shiftBitsetVectorLeft(z,t);
     }
     return z;
 }

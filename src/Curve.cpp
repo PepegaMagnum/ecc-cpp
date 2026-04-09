@@ -29,26 +29,34 @@ bool Curve::isPointOnCurve(Point p) {
     bitset32Vec x = p.getX();
     bitset32Vec y = p.getY();
 
-    bitset32Vec y2 = binSquare(y, preCompSquaringTable);
+    std::cout <<"x" <<std::endl;
+    printBitset32Vec(x);
+    std::cout <<"y" <<std::endl;
+    printBitset32Vec(y);
 
-    y2 = binReduc(y2,m_fz,m_m, true);
-    std::cout <<"y2: " <<std::endl;
-    printBitset32Vec(y2, true);
+//    bitset32Vec y2 = binSquare(y, preCompSquaringTable);
 
-    bitset32Vec xy = binMult(x, y, m_m);
+   // y2 = binReduc(y2,m_fz,m_m, false);
+    // std::cout <<"y2: " <<std::endl;
+    // printBitset32Vec(y2, true);
+
+    bitset32Vec xy = binMult(x, y, m_m, true);
+    std::cout <<"xy" <<std::endl;
+    printBitset32Vec(xy);
     xy = binReduc(xy,m_fz,m_m);
-
-    bitset32Vec x2 = binSquare(x, preCompSquaringTable);
-    x2 = binReduc(x2,m_fz,m_m);
-
-    bitset32Vec x3 = binMult(x2, x, m_m);
-    x3 = binReduc(x3,m_fz,m_m);
-
-    bitset32Vec ax2 = binMult(m_a, x2, m_m);
-    ax2 = binReduc(ax2,m_fz,m_m);
-
-    bitset32Vec leftSideEq = binAdd(y2,xy, m_m);
-    bitset32Vec rightSideEq = binAdd(binAdd(x3,ax2, m_m), m_b, m_m);
+    printBitset32Vec(xy);
+    //
+    // bitset32Vec x2 = binSquare(x, preCompSquaringTable);
+    // x2 = binReduc(x2,m_fz,m_m);
+    //
+    // bitset32Vec x3 = binMult(x2, x, m_m);
+    // x3 = binReduc(x3,m_fz,m_m);
+    //
+    // bitset32Vec ax2 = binMult(m_a, x2, m_m);
+    // ax2 = binReduc(ax2,m_fz,m_m);
+    //
+    // bitset32Vec leftSideEq = binAdd(y2,xy, m_m);
+    // bitset32Vec rightSideEq = binAdd(binAdd(x3,ax2, m_m), m_b, m_m);
 
      // printBitset32Vec(y2);
      // printBitset32Vec(x3);
@@ -56,11 +64,11 @@ bool Curve::isPointOnCurve(Point p) {
      // printBitset32Vec(x2);
      // printBitset32Vec(ax2);
 
-    printBitset32Vec(leftSideEq);
-    printBitset32Vec(rightSideEq);
+    // printBitset32Vec(leftSideEq);
+    // printBitset32Vec(rightSideEq);
 
-    if ( bitset_vector_to_mpz(leftSideEq) == bitset_vector_to_mpz(rightSideEq) ) {
-        return true;
-    }
+    // if ( bitset_vector_to_mpz(leftSideEq) == bitset_vector_to_mpz(rightSideEq) ) {
+    //     return true;
+    // }
     return false;
 }
