@@ -5,25 +5,16 @@
 
 int main() {
 
-    // field parameters
-    mpz_t fz_int, a, b;
-    uint32_t m = 32;
-    bitset32Vec fz;
-    mpz_set_ui(fz_int, 1);
+    mpz_class a(83);
+    mpz_class b(202);
+    mpz_class c;
 
-    hex_string_to_mpz(a, "b46574af");
-    hex_string_to_mpz(b, "f6c71ed1");
+    binMult(a.get_mpz_t(), b.get_mpz_t(), c.get_mpz_t(), 8);
 
-    mpz_mul_2exp(fz_int, fz_int, m);
-    mpz_add_ui(fz_int, fz_int, std::stoi("10001101", nullptr, 2));
+    std::cout << c << std::endl;
+    binSquare(c.get_mpz_t(), a.get_mpz_t());
 
-    Curve myCurve = Curve(a, b, m, fz_int);
-
-    printBitset32Vec(myCurve.getFz(), true);
-
-    Point G = Point("32682f63","42b5226d");
-
-    std::cout <<myCurve.isPointOnCurve(G);
+    std::cout << c << std::endl;
 
     return 0;
 }
