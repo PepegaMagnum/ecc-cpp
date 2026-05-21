@@ -7,68 +7,62 @@
 #include "../include/Curve.h"
 
 Curve::Curve(mpz_t a, mpz_t b, uint32_t m, mpz_t fz) {
-
-    const auto t = ceil(double(m) / 32);
-
-    mpz_to_bitset32Vec(a, m_a);
-    mpz_to_bitset32Vec(b, m_b);
-    mpz_to_bitset32Vec(fz, m_fz);
+    mpz_set(m_a.get_mpz_t(),a);
+    mpz_set(m_b.get_mpz_t(),b);
+    mpz_set(m_fz.get_mpz_t(),fz);
     m_m = m;
-    preCompSquaringTable = computeExpansionTable();
-}
-
-Curve::Curve(bitset32Vec a, bitset32Vec b, uint32_t m, bitset32Vec fz) {
-    m_a = std::move(a);
-    m_b = std::move(b);
-    m_m = m;
-    m_fz = std::move(fz);
-    preCompSquaringTable = computeExpansionTable();
 }
 
 bool Curve::isPointOnCurve(Point p) {
-    bitset32Vec x = p.getX();
-    bitset32Vec y = p.getY();
+    mpz_t x;
+    mpz_t y;
+    mpz_class y2;
 
-    std::cout <<"x" <<std::endl;
-    printBitset32Vec(x);
-    std::cout <<"y" <<std::endl;
-    printBitset32Vec(y);
+    mpz_init_set(x, p.getX());
+    mpz_init_set(y, p.getY());
 
-//    bitset32Vec y2 = binSquare(y, preCompSquaringTable);
+    gmp_printf("x: 0x%ZX\n", x);
+    gmp_printf("y: 0x%ZX\n", y);
 
-   // y2 = binReduc(y2,m_fz,m_m, false);
-    // std::cout <<"y2: " <<std::endl;
-    // printBitset32Vec(y2, true);
+    binSquare(y2.get_mpz_t(), y);
+    // gmp_printf("y2: 0x%ZX\n", y2.get_mpz_t());
+    binReduc(y2.get_mpz_t(),m_fz.get_mpz_t(),m_m);
+    std::cout << y2.get_mpz_t() << std::endl;
 
-    bitset32Vec xy = binMult(x, y, m_m, true);
-    std::cout <<"xy" <<std::endl;
-    printBitset32Vec(xy);
-    xy = binReduc(xy,m_fz,m_m);
-    printBitset32Vec(xy);
-    //
-    // bitset32Vec x2 = binSquare(x, preCompSquaringTable);
-    // x2 = binReduc(x2,m_fz,m_m);
-    //
-    // bitset32Vec x3 = binMult(x2, x, m_m);
-    // x3 = binReduc(x3,m_fz,m_m);
-    //
-    // bitset32Vec ax2 = binMult(m_a, x2, m_m);
-    // ax2 = binReduc(ax2,m_fz,m_m);
-    //
-    // bitset32Vec leftSideEq = binAdd(y2,xy, m_m);
-    // bitset32Vec rightSideEq = binAdd(binAdd(x3,ax2, m_m), m_b, m_m);
+    mpz_class xy;
+    binMult(x, y, xy.get_mpz_t(), m_m);
+    binReduc(xy.get_mpz_t(),m_fz.get_mpz_t(),m_m);
+    std::cout << xy.get_mpz_t() << std::endl;
 
-     // printBitset32Vec(y2);
-     // printBitset32Vec(x3);
-     // printBitset32Vec(xy);
-     // printBitset32Vec(x2);
-     // printBitset32Vec(ax2);
+    mpz_class x2;
+    binSquare(x2.get_mpz_t(), x);
+    binReduc(x2.get_mpz_t(),m_fz.get_mpz_t(),m_m);
+    std::cout << x2.get_mpz_t() << std::endl;
 
-    // printBitset32Vec(leftSideEq);
-    // printBitset32Vec(rightSideEq);
+    mpz_class x3;
+    binMult(x2.get_mpz_t(), x,x3.get_mpz_t(), m_m);
+    binReduc(x3.get_mpz_t(),m_fz.get_mpz_t(),m_m);
+    std::cout << x3.get_mpz_t() << std::endl;
 
-    // if ( bitset_vector_to_mpz(leftSideEq) == bitset_vector_to_mpz(rightSideEq) ) {
-    //     return true;
-    // }
+    mpz_class ax2;
+    // std::cout <<"a: " << m_a.get_mpz_t() << std::endl;
+    // std::cout <<"b: " << x2.get_mpz_t() << std::endl;
+    binMult(m_a.get_mpz_t(), x2.get_mpz_t(),ax2.get_mpz_t(), m_m);
+    binReduc(ax2.get_mpz_t(),m_fz.get_mpz_t(),m_m);
+    std::cout << ax2.get_mpz_t() << std::endl;
+
+    mpz_class equation;
+
+    mpz_xor(equation.get_mpz_t(), y2.get_mpz_t(), xy.get_mpz_t());
+    mpz_xor(equation.get_mpz_t(), equation.get_mpz_t(), x3.get_mpz_t());
+    mpz_xor(equation.get_mpz_t(), equation.get_mpz_t(), ax2.get_mpz_t());
+    mpz_xor(equation.get_mpz_t(), equation.get_mpz_t(), m_b.get_mpz_t());
+
+    std::cout << "EQUATION EQUAL TO (insert drum roll): " <<equation.get_mpz_t() << std::endl;
+
+    if ( mpz_cmp_ui(equation.get_mpz_t(),0) == 0) {
+        return true;
+    }
+    std::cout << "Pierdole ci matke.pl" << std::endl;
     return false;
 }

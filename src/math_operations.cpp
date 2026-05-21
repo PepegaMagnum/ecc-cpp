@@ -4,7 +4,7 @@ void binMult(mpz_t a, mpz_t b, mpz_t c, uint32_t m) {
     if (mpz_tstbit(a, 0) == 1) {
         mpz_set(c, b);
     } else {
-        mpz_set(c, 0);
+        mpz_set_d(c, 0);
     }
 
     for (int i = 1; i < m; i++) {
@@ -19,6 +19,7 @@ void binSquare(mpz_t c, const mpz_t a) {
     mpz_set_ui(c, 0);
 
     size_t bit_count = mpz_sizeinbase(a, 2);
+    // std::cout << "bit_count: " << bit_count << std::endl;
 
     for (size_t i = 0; i < bit_count; i++) {
         if (mpz_tstbit(a, i)) {
@@ -31,7 +32,7 @@ void binReduc(mpz_t c, mpz_t fz, uint32_t m) {
     int k;
     mpz_t tmp;
     mpz_init(tmp);
-    for (int i = mpz_sizeinbase(c, 2) - 1; i >= m-1; i--) {
+    for (int i = mpz_sizeinbase(c, 2) - 1; i > m-1; i--) {
         if (mpz_tstbit(c, i)) {
             k = i-m;
             mpz_mul_2exp(tmp, fz, k);
