@@ -10,11 +10,13 @@ class Point
 {
     mpz_class m_x;
     mpz_class m_y;
+    bool      isInfinity = false;
 public:
 
     Point() = default;
 
-    Point(const mpz_t a_x, const mpz_t a_y);
+    Point(const mpz_t a_x, const mpz_t a_y, bool a_isInfinity);
+    Point(const int a_x, const int a_y, bool a_isInfinity);
     Point(const char* hex_x, const char* hex_y);
     void print() const;
     const __mpz_struct* getX() const {
@@ -23,7 +25,21 @@ public:
     const __mpz_struct* getY() const {
         return m_y.get_mpz_t();
     }
+    void setX(mpz_t x) {
+        mpz_set(m_x.get_mpz_t(), x);
+    }
 
+    void setY(mpz_t y) {
+        mpz_set(m_y.get_mpz_t(), y);
+    }
+
+    bool getIsInfinity() const {
+        return isInfinity;
+    }
+
+    bool operator==(const Point & point) const;
+
+    bool operator!=(const Point& P) const;
 };
 
 #endif //ECC_CPP_POINT_H

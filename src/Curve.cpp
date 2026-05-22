@@ -21,11 +21,7 @@ bool Curve::isPointOnCurve(Point p) {
     mpz_init_set(x, p.getX());
     mpz_init_set(y, p.getY());
 
-    gmp_printf("x: 0x%ZX\n", x);
-    gmp_printf("y: 0x%ZX\n", y);
-
     binSquare(y2.get_mpz_t(), y);
-    // gmp_printf("y2: 0x%ZX\n", y2.get_mpz_t());
     binReduc(y2.get_mpz_t(),m_fz.get_mpz_t(),m_m);
     std::cout << y2.get_mpz_t() << std::endl;
 
@@ -45,8 +41,6 @@ bool Curve::isPointOnCurve(Point p) {
     std::cout << x3.get_mpz_t() << std::endl;
 
     mpz_class ax2;
-    // std::cout <<"a: " << m_a.get_mpz_t() << std::endl;
-    // std::cout <<"b: " << x2.get_mpz_t() << std::endl;
     binMult(m_a.get_mpz_t(), x2.get_mpz_t(),ax2.get_mpz_t(), m_m);
     binReduc(ax2.get_mpz_t(),m_fz.get_mpz_t(),m_m);
     std::cout << ax2.get_mpz_t() << std::endl;
@@ -58,11 +52,79 @@ bool Curve::isPointOnCurve(Point p) {
     mpz_xor(equation.get_mpz_t(), equation.get_mpz_t(), ax2.get_mpz_t());
     mpz_xor(equation.get_mpz_t(), equation.get_mpz_t(), m_b.get_mpz_t());
 
-    std::cout << "EQUATION EQUAL TO (insert drum roll): " <<equation.get_mpz_t() << std::endl;
+    mpz_clears(x,y);
 
     if ( mpz_cmp_ui(equation.get_mpz_t(),0) == 0) {
         return true;
     }
-    std::cout << "Pierdole ci matke.pl" << std::endl;
     return false;
+}
+
+Point Curve::pointNeg(Point& p) {
+    mpz_t newY;
+    Point result(p.getX(), p.getY(), false);
+    mpz_xor(newY, p.getY(), p.getX());
+    p.setY(newY);
+    mpz_clear(newY);
+
+    return result;
+}
+
+Point Curve::pointAddition(Point P, Point Q) {
+    mpz_class x1(P.getX());
+    mpz_class x2(Q.getX());
+
+    mpz_class y1(P.getY());
+    mpz_class y2(Q.getY());
+
+    if (P != Q) {
+        if (P == pointNeg(Q)) {
+            std::cout << "P is negation of Q";
+            return Point{0, 0, true};
+        }
+
+        if (Q.getIsInfinity() ) {
+            std::cout << "Q is infinity";
+            return P;
+        }
+
+        if (P.getIsInfinity() ) {
+            std::cout << "P is infinity";
+            return Q;
+        }
+
+        mpz_class lambda;
+        mpz_class lambda2;
+        mpz_class y1y2;
+        mpz_class x1x2inv;
+        mpz_class x1x2;
+        mpz_class x1x3;
+
+        mpz_class x3;
+        mpz_class y3;
+
+        binMult(x1.get_mpz_t(), x2.get_mpz_t(), x1x2.get_mpz_t(), m_m);
+        binMult(y1.get_mpz_t(), y2.get_mpz_t(), y1y2.get_mpz_t(), m_m);
+        binInv(x1x2inv.get_mpz_t(), m_fz.get_mpz_t(), m_m);
+        binMult(y1y2.get_mpz_t(), x1x2inv.get_mpz_t(), lambda.get_mpz_t(), m_m);
+
+        binSquare(lambda2.get_mpz_t(), lambda.get_mpz_t());
+        mpz_xor(x3.get_mpz_t(), lambda2.get_mpz_t(), x1.get_mpz_t());
+        mpz_xor(x3.get_mpz_t(), x3.get_mpz_t(), m_a.get_mpz_t());
+        mpz_xor(x3.get_mpz_t(), x3.get_mpz_t(), x2.get_mpz_t());
+
+        binMult(x1.get_mpz_t(),x3.get_mpz_t(),x1x3.get_mpz_t(), m_m);
+        mpz_xor(y3.get_mpz_t(), y3.get_mpz_t(), x1x3.get_mpz_t());
+        mpz_xor(y3.get_mpz_t(), y3.get_mpz_t(), lambda.get_mpz_t());
+        mpz_xor(y3.get_mpz_t(), y3.get_mpz_t(), x3.get_mpz_t());
+        mpz_xor(y3.get_mpz_t(), y3.get_mpz_t(), y1.get_mpz_t());
+
+        binReduc(x3.get_mpz_t(), m_fz.get_mpz_t(),m_m);
+        binReduc(y3.get_mpz_t(), m_fz.get_mpz_t(),m_m);
+
+        return Point(x3.get_mpz_t(), y3.get_mpz_t(), false);
+
+    }
+    std::cout << "Double kill" << std::endl;
+    return Point{0, 0, false};
 }

@@ -20,7 +20,8 @@ public:
     Curve() = default;
     Curve(mpz_t a, mpz_t b, uint32_t m, mpz_t fz);
     bool isPointOnCurve(Point p);
-    // Point pointAddition(Point P, Point Q);
+    static Point pointNeg(Point& p);
+    Point pointAddition(Point P, Point Q);
     // Point pointDoubling(Point P);
     // Point pointMultiplication(Point P, uint32_t a);
 

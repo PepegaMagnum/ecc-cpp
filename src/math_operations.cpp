@@ -41,7 +41,7 @@ void binReduc(mpz_t c, mpz_t fz, uint32_t m) {
     }
 }
 
-void binInv(mpz_t a, mpz_t fz, uint32_t m, bool debug) {
+void binInv(mpz_t a, mpz_t fz, uint32_t m) {
     int j;
     mpz_t u, v, g1, g2;
     mpz_t zjv, zjg2, zj;

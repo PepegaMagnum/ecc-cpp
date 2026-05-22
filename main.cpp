@@ -18,5 +18,7 @@ int main() {
     bool isGenOnCurve = myCurve.isPointOnCurve(G);
     std::cout << isGenOnCurve << std::endl;
 
+
+
     return 0;
 }
