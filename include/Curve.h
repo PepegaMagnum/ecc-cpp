@@ -22,7 +22,7 @@ public:
     bool isPointOnCurve(Point p);
     static Point pointNeg(Point& p);
     Point pointAddition(Point P, Point Q);
-    // Point pointDoubling(Point P);
+    Point pointDoubling(Point P);
     // Point pointMultiplication(Point P, uint32_t a);
 
     const __mpz_struct* getFz() const{
