@@ -8,7 +8,7 @@ void binMult(mpz_t a, mpz_t b, mpz_t c, uint32_t m) {
     mpz_set(tmp, b);
 
     if (mpz_tstbit(a, 0) == 1) {
-        mpz_set(c, b);
+        mpz_set(c, tmp);
     } else {
         mpz_set_d(c, 0);
     }
@@ -64,10 +64,11 @@ void binInv(mpz_t a, mpz_t fz, uint32_t m) {
     mpz_set_d(g2, 0);
 
     while (mpz_cmp_d(u, 1) != 0) {
-        gmp_printf("u = 0x%Zx\n", u);
-        gmp_printf("v = 0x%Zx\n", v);
+        std::cout << "it's my fault again" << std::endl;
+        // gmp_printf("u = 0x%Zx\n", u);
+        // gmp_printf("v = 0x%Zx\n", v);
         j = mpz_sizeinbase(u, 2) - mpz_sizeinbase(v, 2);
-        std::cout << mpz_sizeinbase(u, 2) <<" - " <<mpz_sizeinbase(v, 2) << " = " << j << std::endl;
+        // std::cout << mpz_sizeinbase(u, 2) <<" - " <<mpz_sizeinbase(v, 2) << " = " << j << std::endl;
         if (j < 0) {
             mpz_swap(v, u);
             mpz_swap(g1, g2);
@@ -79,20 +80,20 @@ void binInv(mpz_t a, mpz_t fz, uint32_t m) {
         mpz_set_ui(zj,1);
         // gmp_printf("zj = %Zx\n", zj);
         mpz_mul_2exp(zj, zj, j);
-        gmp_printf("zj = 0x%Zx\n", zj);
+        // gmp_printf("zj = 0x%Zx\n", zj);
 
         binMult(zj, v, zjv, m);
-        gmp_printf("zjv = 0x%Zx\n", zjv);
+        // gmp_printf("zjv = 0x%Zx\n", zjv);
 
         mpz_xor(u, u, zjv);
-        gmp_printf("u xor zjv = 0x%Zx\n", u);
+        // gmp_printf("u xor zjv = 0x%Zx\n", u);
         binMult(zj, g2, zjg2, m);
 
         mpz_xor(g1, g1, zjg2);
-        gmp_printf("g1 = 0x%Zx\n", g1);
+        // gmp_printf("g1 = 0x%Zx\n", g1);
         iter++;
     }
     mpz_set(a, g1);
-    gmp_printf("a = 0x%Zx\n", a);
+    // gmp_printf("a = 0x%Zx\n", a);
     mpz_clears(u, v, g1, g2, zjv, zjg2, NULL);
 }

@@ -60,6 +60,7 @@ bool Curve::isPointOnCurve(Point p) {
 
 Point Curve::pointNeg(Point& p) {
     mpz_t newY;
+    mpz_init(newY);
     Point result(p.getX(), p.getY(), false);
     mpz_xor(newY, p.getY(), p.getX());
     p.setY(newY);
@@ -105,21 +106,38 @@ Point Curve::pointAddition(Point P, Point Q) {
         mpz_class x3;
         mpz_class y3;
 
-        binMult(x1.get_mpz_t(), x2.get_mpz_t(), x1x2.get_mpz_t(), m_m);
-        binMult(y1.get_mpz_t(), y2.get_mpz_t(), y1y2.get_mpz_t(), m_m);
+        // lambda calculation
+        mpz_xor(x1x2.get_mpz_t(), x1.get_mpz_t(), x2.get_mpz_t());
+        printHex("x1x2", x1x2.get_mpz_t());
+        mpz_xor(y1y2.get_mpz_t(), y1.get_mpz_t(), y2.get_mpz_t());
+        printHex("y1y2", y1y2.get_mpz_t());
+        mpz_set(x1x2inv.get_mpz_t(), x1x2.get_mpz_t());
         binInv(x1x2inv.get_mpz_t(), m_fz.get_mpz_t(), m_m);
+        printHex("x1x2inv", x1x2inv.get_mpz_t());
         binMult(y1y2.get_mpz_t(), x1x2inv.get_mpz_t(), lambda.get_mpz_t(), m_m);
+        printHex("lambda", lambda.get_mpz_t());
 
         binSquare(lambda2.get_mpz_t(), lambda.get_mpz_t());
-        mpz_xor(x3.get_mpz_t(), lambda2.get_mpz_t(), x1.get_mpz_t());
+        printHex("lambda2", lambda2.get_mpz_t());
+
+        mpz_set(x3.get_mpz_t(), lambda2.get_mpz_t());
+        mpz_xor(x3.get_mpz_t(), x3.get_mpz_t(), lambda.get_mpz_t());
+        mpz_xor(x3.get_mpz_t(), x3.get_mpz_t(), x1.get_mpz_t());
         mpz_xor(x3.get_mpz_t(), x3.get_mpz_t(), m_a.get_mpz_t());
         mpz_xor(x3.get_mpz_t(), x3.get_mpz_t(), x2.get_mpz_t());
 
-        binMult(x1.get_mpz_t(),x3.get_mpz_t(),x1x3.get_mpz_t(), m_m);
-        mpz_xor(y3.get_mpz_t(), y3.get_mpz_t(), x1x3.get_mpz_t());
-        mpz_xor(y3.get_mpz_t(), y3.get_mpz_t(), lambda.get_mpz_t());
+        mpz_set_d(y3.get_mpz_t(), 0);
+        mpz_xor(x1x3.get_mpz_t(), x1.get_mpz_t(),x3.get_mpz_t());
+        printHex("x1 + x3", x1x3.get_mpz_t());
+
+        binMult(lambda.get_mpz_t(), x1x3.get_mpz_t(), y3.get_mpz_t(), 2*m_m);
+        printHex("(x1+x3)Lambda", y3.get_mpz_t());
         mpz_xor(y3.get_mpz_t(), y3.get_mpz_t(), x3.get_mpz_t());
+
         mpz_xor(y3.get_mpz_t(), y3.get_mpz_t(), y1.get_mpz_t());
+
+        printHex("x3", x3.get_mpz_t());
+        printHex("y3", y3.get_mpz_t());
 
         binReduc(x3.get_mpz_t(), m_fz.get_mpz_t(),m_m);
         binReduc(y3.get_mpz_t(), m_fz.get_mpz_t(),m_m);
@@ -127,7 +145,7 @@ Point Curve::pointAddition(Point P, Point Q) {
         return Point{x3.get_mpz_t(), y3.get_mpz_t(), false};
 
     }
-    std::cout << "Double kill" << std::endl;
+    // std::cout << "Double kill" << std::endl;
     return pointDoubling(P);
 }
 
@@ -137,7 +155,7 @@ Point Curve::pointDoubling(Point P) {
 
     mpz_class invX(x.get_mpz_t());
     binInv(invX.get_mpz_t(), m_fz.get_mpz_t(), m_m);
-    std::cout << "Inversion of X" << invX.get_mpz_t() << std::endl;
+    // std::cout << "Inversion of X" << invX.get_mpz_t() << std::endl;
 
     mpz_class yInvX;
     mpz_class lambda;
@@ -145,13 +163,13 @@ Point Curve::pointDoubling(Point P) {
 
     binMult(y.get_mpz_t(),invX.get_mpz_t(),yInvX.get_mpz_t(), m_m);
     mpz_xor(lambda.get_mpz_t(), x.get_mpz_t(), yInvX.get_mpz_t());
-    printHex("lambda", lambda.get_mpz_t());
+    // printHex("lambda", lambda.get_mpz_t());
     binSquare(lambda2.get_mpz_t(),lambda.get_mpz_t());
 
     mpz_class x2;
 
     binSquare(x2.get_mpz_t(),x.get_mpz_t());
-    printHex("x2", x2.get_mpz_t());
+    // printHex("x2", x2.get_mpz_t());
 
     mpz_class x3, y3;
     mpz_class x3Lambda;
@@ -160,7 +178,7 @@ Point Curve::pointDoubling(Point P) {
     mpz_set(x3.get_mpz_t(), lambda2.get_mpz_t());
     mpz_xor(x3.get_mpz_t(), x3.get_mpz_t(), lambda.get_mpz_t());
     mpz_xor(x3.get_mpz_t(), x3.get_mpz_t(), m_a.get_mpz_t());
-    printHex("x3", x3.get_mpz_t());
+    // printHex("x3", x3.get_mpz_t());
 
     //calculating y3
     // printHex("lambda", lambda.get_mpz_t());
