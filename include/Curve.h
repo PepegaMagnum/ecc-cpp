@@ -23,7 +23,7 @@ public:
     static Point pointNeg(Point& p);
     Point pointAddition(Point P, Point Q);
     Point pointDoubling(Point P);
-    // Point pointMultiplication(Point P, uint32_t a);
+    Point pointMultiplication(Point P, mpz_t a);
 
     const __mpz_struct* getFz() const{
         return m_fz.get_mpz_t();

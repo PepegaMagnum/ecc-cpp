@@ -64,7 +64,7 @@ void binInv(mpz_t a, mpz_t fz, uint32_t m) {
     mpz_set_d(g2, 0);
 
     while (mpz_cmp_d(u, 1) != 0) {
-        std::cout << "it's my fault again" << std::endl;
+        // std::cout << "it's my fault again" << std::endl;
         // gmp_printf("u = 0x%Zx\n", u);
         // gmp_printf("v = 0x%Zx\n", v);
         j = mpz_sizeinbase(u, 2) - mpz_sizeinbase(v, 2);
