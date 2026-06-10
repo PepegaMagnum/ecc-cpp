@@ -3,13 +3,11 @@ set(CMAKE_CXX_STANDARD  17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 project(ecc-cpp)
 
-add_executable(ecc-cpp include/math_operations.h src/math_operations.cpp main.cpp
-        include/Point.h
-        src/Point.cpp
-        include/Curve.h
-        src/Curve.cpp
-)
+set(SOURCE_FILES main.cpp)
+add_executable(RhoPollard_run ${SOURCE_FILES})
 
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(GMPXX REQUIRED IMPORTED_TARGET gmpxx)
-target_link_libraries(ecc-cpp PkgConfig::GMPXX)
+include_directories(RhoPollard_lib)
+add_subdirectory(RhoPollard_lib)
+add_subdirectory(test)
+
+target_link_libraries(RhoPollard_run RhoPollard_lib)

@@ -3,8 +3,7 @@
 
 #include <bits/stdc++.h>
 #include <gmp.h>
-#include <gmpxx.h>
-#include <bitset>
+
 
 void binMult(mpz_t a, mpz_t b, mpz_t c, uint32_t m);
 void binSquare(mpz_t c, const mpz_t a);

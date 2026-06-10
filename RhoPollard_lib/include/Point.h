@@ -5,6 +5,7 @@
 #ifndef ECC_CPP_POINT_H
 #define ECC_CPP_POINT_H
 #include "math_operations.h"
+#include <gmpxx.h>
 
 class Point
 {
@@ -31,6 +32,10 @@ public:
 
     void setY(mpz_t y) {
         mpz_set(m_y.get_mpz_t(), y);
+    }
+
+    void setInfinity(bool a_sInfinity) {
+        isInfinity = a_sInfinity;
     }
 
     bool getIsInfinity() const {

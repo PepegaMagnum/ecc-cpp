@@ -6,8 +6,7 @@
 Point::Point(const mpz_t a_x, const mpz_t a_y, bool a_isInfinity)
     : m_x(a_x), m_y(a_y), isInfinity(a_isInfinity)
 {
-    // The body remains completely empty!
-    // The initializer list above safely and efficiently copies the mpz_t data.
+
 }
 
 Point::Point(const int a_x, const int a_y, bool a_isInfinity) {

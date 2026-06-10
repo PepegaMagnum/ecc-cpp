@@ -82,17 +82,17 @@ Point Curve::pointAddition(Point P, Point Q) {
 
     if (P != Q) {
         if (P == pointNeg(Q)) {
-            std::cout << "P is negation of Q" <<std::endl;
+            // std::cout << "P is negation of Q" <<std::endl;
             return Point{0, 0, true};
         }
 
         if (Q.getIsInfinity() ) {
-            std::cout << "Q is infinity" <<std::endl;
+            // std::cout << "Q is infinity" <<std::endl;
             return P;
         }
 
         if (P.getIsInfinity() ) {
-            std::cout << "P is infinity" <<std::endl;
+            // std::cout << "P is infinity" <<std::endl;
             return Q;
         }
 
@@ -142,7 +142,7 @@ Point Curve::pointAddition(Point P, Point Q) {
         binReduc(x3.get_mpz_t(), m_fz.get_mpz_t(),m_m);
         binReduc(y3.get_mpz_t(), m_fz.get_mpz_t(),m_m);
 
-        return Point{x3.get_mpz_t(), y3.get_mpz_t(), false};
+        return Point {x3.get_mpz_t(), y3.get_mpz_t(), false};;
 
     }
     // std::cout << "Double kill" << std::endl;
@@ -207,5 +207,6 @@ Point Curve::pointMultiplication(Point P, mpz_t a) {
         }
         p = pointDoubling(p);
     }
+
     return q;
 }
