@@ -144,9 +144,11 @@ Point Curve::pointAddition(Point P, Point Q) {
 
         return Point {x3.get_mpz_t(), y3.get_mpz_t(), false};;
 
+    } else {
+        // std::cout << "Double kill" << std::endl;
+        return pointDoubling(P);
     }
-    // std::cout << "Double kill" << std::endl;
-    return pointDoubling(P);
+
 }
 
 Point Curve::pointDoubling(Point P) {
@@ -200,7 +202,8 @@ Point Curve::pointMultiplication(Point P, mpz_t a) {
     Point q {0, 0, true};
     Point p = P;
 
-    for (int i = mpz_sizeinbase(a,2) - 1  ; i >= 0;i--) {
+    for (int i = 0; i < mpz_sizeinbase(a,2); i++) {
+        // std::cout <<"Step: " <<i <<std::endl;
         if (mpz_tstbit(a, i) == 1) {
             q = pointAddition(p,q);
             // q.print();

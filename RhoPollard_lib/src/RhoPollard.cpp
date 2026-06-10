@@ -85,7 +85,7 @@ void RhoPollard::computeLog(const Point& P, const Point& Q, mpz_t result, std::m
     Point a_iP, b_iQ;
     Point a_2iP, b_2iQ;
 
-    std::uniform_int_distribution<uint32_t> dis(1, 65920-1);
+    std::uniform_int_distribution<uint32_t> dis(1, m_n);
 
     for (int j = 0; j <= 4; j++) {
         int i = 0;
@@ -102,7 +102,7 @@ void RhoPollard::computeLog(const Point& P, const Point& Q, mpz_t result, std::m
         X_i = m_curve.pointAddition(a_iP, b_iQ);
         X_2i = m_curve.pointAddition(a_2iP, b_2iQ);
 
-        while (i <= std::floor(sqrt(65920)) ) { //replace with std::floor(sqrt(65920))
+        while (i <= std::floor(sqrt(m_n)) ) {
             // std::cout << "Iteracja: " << i << std::endl;
 
             // Single Step
@@ -121,21 +121,23 @@ void RhoPollard::computeLog(const Point& P, const Point& Q, mpz_t result, std::m
             X_2i = funcF(X2iTmp, P, Q);
 
             if (X_i == X_2i) {
-                std::cout << "AYE LMAOOOOOOO" << std::endl;
-                // if (mpz_cmp(b_i.get_mpz_t(), b_2i.get_mpz_t()) == 0)
-                //     break;
-                // mpz_gcd(gcd.get_mpz_t(), b_i.get_mpz_t(), b_2i.get_mpz_t());
-                // if (mpz_cmp_ui(gcd.get_mpz_t(), 0) == 0) {
-                //     std::cout <<"LAMBO" << std::endl;
-                //     mpz_sub(subTmp.get_mpz_t(), a_i.get_mpz_t(), a_2i.get_mpz_t());
-                //     mpz_sub(subTmp2.get_mpz_t(), b_i.get_mpz_t(), b_2i.get_mpz_t());
-                //     mpz_invert(subTmp2.get_mpz_t(), subTmp2.get_mpz_t(), m_n.get_mpz_t());
-                //     mpz_mul(result, subTmp.get_mpz_t(), subTmp2.get_mpz_t());
-                // } else {
-                //     std::cout << "SZAMBO" << std::endl;
-                //     mpz_set_d(result, -1);
-                //     break;
-                // }
+                // std::cout << "AYE LMAOOOOOOO" << std::endl;
+
+                if (mpz_cmp(b_i.get_mpz_t(), b_2i.get_mpz_t()) == 0)
+                    break;
+
+                mpz_gcd(gcd.get_mpz_t(), b_i.get_mpz_t(), b_2i.get_mpz_t());
+
+                if (mpz_cmp_ui(gcd.get_mpz_t(), 0) == 0) {
+                    mpz_sub(subTmp.get_mpz_t(), a_i.get_mpz_t(), a_2i.get_mpz_t());
+                    mpz_sub(subTmp2.get_mpz_t(), b_i.get_mpz_t(), b_2i.get_mpz_t());
+                    mpz_class invertN;
+                    mpz_set_d(invertN.get_mpz_t(), m_n);
+                    mpz_invert(subTmp2.get_mpz_t(), subTmp2.get_mpz_t(), invertN.get_mpz_t());
+                    mpz_mul(result, subTmp.get_mpz_t(), subTmp2.get_mpz_t());
+                } else {
+                    mpz_set_d(result, -1);
+                }
             } else {
                 i++;
             }

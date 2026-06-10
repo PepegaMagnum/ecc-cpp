@@ -7,6 +7,7 @@
 int main() {
     mpz_class a, b, fz;
     uint32_t m = 16;
+    uint32_t n = 65920;
 
     std::random_device rd;
     if (rd.entropy() > 0) {
@@ -15,7 +16,7 @@ int main() {
 
     std::mt19937_64 generator(rd());
     mpz_class a_i;
-    std::uniform_int_distribution<uint32_t> dis(1, 65920-1);
+    std::uniform_int_distribution<uint32_t> dis(1, n);
     mpz_set_d(a_i.get_mpz_t(), dis(generator));
 
     mpz_set_str(a.get_mpz_t(), "2905", 16);
@@ -40,26 +41,20 @@ int main() {
         nGAdd = myCurve.pointAddition(nGAdd, G);
     }
 
-    nG.print();
-    nGAdd.print();
+    mpz_class result;
+    Point pointResult;
 
-    if (!(nG == nGAdd)) {
-        std::cout << "NOT EQUAL" << std::endl;
+    RhoPollard rhoPol(myCurve, n);
+
+    for (int i = 0; i < 1000; i++) {
+        rhoPol.computeLog(G, nG, result.get_mpz_t(), generator);
+
+        if (mpz_cmp_d(result.get_mpz_t(), -1) != 0) {
+            pointResult = myCurve.pointMultiplication(G, result.get_mpz_t());
+            if (pointResult == nG) {
+                return 0;
+            }
+        }
     }
-
-    // mpz_class result;
-    // Point pointResult;
-    //
-    // RhoPollard rhoPol(myCurve, 65920);
-
-    // for (int i = 0; i < 100; i++) {
-    //     rhoPol.computeLog(G, nG, result.get_mpz_t(), generator);
-    //     // if (mpz_cmp_d(result.get_mpz_t(), -1) != 0) {
-    //     //     pointResult = myCurve.pointMultiplication(G, result.get_mpz_t());
-    //     //     if (pointResult == nG)
-    //     //         break;
-    //     // }
-    // }
-
-    return 0;
+    return -1;
 }
