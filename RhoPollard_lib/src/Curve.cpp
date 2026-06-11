@@ -13,7 +13,7 @@ Curve::Curve(mpz_t a, mpz_t b, uint32_t m, mpz_t fz) {
     m_m = m;
 }
 
-bool Curve::isPointOnCurve(Point p) {
+bool Curve::isPointOnCurve(const Point& p) {
     mpz_t x;
     mpz_t y;
     mpz_class y2;
@@ -145,13 +145,12 @@ Point Curve::pointAddition(Point P, Point Q) {
         return Point {x3.get_mpz_t(), y3.get_mpz_t(), false};;
 
     } else {
-        // std::cout << "Double kill" << std::endl;
         return pointDoubling(P);
     }
 
 }
 
-Point Curve::pointDoubling(Point P) {
+Point Curve::pointDoubling(const Point& P) {
     mpz_class x(P.getX());
     mpz_class y(P.getY());
 
@@ -197,7 +196,7 @@ Point Curve::pointDoubling(Point P) {
     return Point{x3.get_mpz_t(), y3.get_mpz_t(), false};
 }
 
-Point Curve::pointMultiplication(Point P, mpz_t a) {
+Point Curve::pointMultiplication(const Point &P, mpz_t a) {
 
     Point q {0, 0, true};
     Point p = P;

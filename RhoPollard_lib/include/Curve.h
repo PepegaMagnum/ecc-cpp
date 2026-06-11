@@ -20,11 +20,11 @@ public:
     mpz_class m_fz;
     Curve() = default;
     Curve(mpz_t a, mpz_t b, uint32_t m, mpz_t fz);
-    bool isPointOnCurve(Point p);
+    bool isPointOnCurve(const Point& p);
     static Point pointNeg(Point& p);
     Point pointAddition(Point P, Point Q);
-    Point pointDoubling(Point P);
-    Point pointMultiplication(Point P, mpz_t a);
+    Point pointDoubling(const Point& P);
+    Point pointMultiplication(const Point &P, mpz_t a);
 };
 
 

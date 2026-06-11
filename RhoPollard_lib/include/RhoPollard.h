@@ -11,22 +11,27 @@
 class RhoPollard {
 
     Curve m_curve;
-    uint32_t m_n;
+    mpz_class m_n;
+    mpz_class m_fieldDivideMod;
+    mpz_class m_mod3Result;
+    mpz_class m_resultCoeff;
 
     Point funcF(Point Xi, Point P, Point Q);
-    void funcG(mpz_t result, mpz_t a, Point P, Point Xi);
-    void funcH(mpz_t result, mpz_t b, Point P, Point Xi);
+    void funcG(mpz_t result, mpz_t a, const Point& P, const Point& Xi);
+    void funcH(mpz_t result, mpz_t b, const Point& P, const Point& Xi);
 
 
 
 public:
     RhoPollard() = default;
-    RhoPollard(Curve a_curve, uint32_t a_n) {
+    RhoPollard(Curve a_curve, mpz_class a_n, uint32_t a_fieldDivideMod) {
         m_curve = std::move(a_curve);
-        m_n = a_n;
-
+        m_fieldDivideMod = a_fieldDivideMod;
+        m_n = std::move(a_n);
+        m_mod3Result = 0;
+        m_resultCoeff = 0;
     }
-    void computeLog(const Point& P, const Point& Q, mpz_t result, std::mt19937_64 generator);
+    void computeLog(const Point& P, const Point& Q, mpz_t result);
 };
 
 #endif //ECC_CPP_RHOPOLLARD_H
