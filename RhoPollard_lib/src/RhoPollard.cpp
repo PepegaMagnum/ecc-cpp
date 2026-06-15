@@ -7,7 +7,7 @@
 #include <utility>
 #include <gmpxx.h>
 
-Point RhoPollard::funcF(Point Xi, Point P, Point Q) {
+Point RhoPollard::funcF(Point &Xi, Point &P, Point &Q) {
 
     mpz_mod(m_mod3Result.get_mpz_t(), Xi.getX(), m_fieldDivideMod.get_mpz_t());
 
@@ -15,8 +15,7 @@ Point RhoPollard::funcF(Point Xi, Point P, Point Q) {
         return m_curve.pointAddition(Xi, Q);
     }
     if (m_mod3Result == 1) {
-        mpz_class multiplier(2);
-        return m_curve.pointMultiplication(Xi, multiplier.get_mpz_t());
+        return m_curve.pointDoubling(Xi);
     }
 
     return m_curve.pointAddition(Xi, P);
@@ -24,10 +23,6 @@ Point RhoPollard::funcF(Point Xi, Point P, Point Q) {
 }
 
 void RhoPollard::funcG(mpz_t result, mpz_t a, const Point& P, const Point& Xi) {
-    if (m_curve.isPointOnCurve(P) != true) {
-        return;
-    }
-
     mpz_mod(m_mod3Result.get_mpz_t(), Xi.getX(), m_fieldDivideMod.get_mpz_t());
 
     if (m_mod3Result == 2) {
@@ -47,10 +42,6 @@ void RhoPollard::funcG(mpz_t result, mpz_t a, const Point& P, const Point& Xi) {
 
 void RhoPollard::funcH(mpz_t result, mpz_t b, const Point& P, const Point& Xi) {
 
-    if (m_curve.isPointOnCurve(P) != true) {
-        return;
-    }
-
     mpz_mod(m_mod3Result.get_mpz_t(), Xi.getX(), m_fieldDivideMod.get_mpz_t());
 
     if (m_mod3Result == 0) {
@@ -66,7 +57,7 @@ void RhoPollard::funcH(mpz_t result, mpz_t b, const Point& P, const Point& Xi) {
     }
 }
 
-void RhoPollard::computeLog(const Point& P, const Point& Q, mpz_t result) {
+void RhoPollard::computeLog(Point &P, Point &Q, mpz_t result) {
 
     // initial parameters
     mpz_class a_i, b_i, a_2i, b_2i;
@@ -84,6 +75,11 @@ void RhoPollard::computeLog(const Point& P, const Point& Q, mpz_t result) {
 
     gmp_randstate_t state;
     gmp_randinit_mt(state);
+
+    mpf_class nSqrt;
+    mpf_class nSqrtFloor;
+    nSqrt = sqrt(m_n);
+    mpf_floor(nSqrtFloor.get_mpf_t(), nSqrt.get_mpf_t());
 
 
     for (int j = 0; j <= 4; j++) {
@@ -104,12 +100,7 @@ void RhoPollard::computeLog(const Point& P, const Point& Q, mpz_t result) {
         X_i = m_curve.pointAddition(a_iP, b_iQ);
         X_2i = m_curve.pointAddition(a_2iP, b_2iQ);
 
-        mpf_class nSqrt;
-        mpf_class nSqrtFloor;
-        nSqrt = sqrt(m_n);
-        mpf_floor(nSqrtFloor.get_mpf_t(), nSqrt.get_mpf_t());
-
-        while (i <= nSqrtFloor.get_d() ) {
+        while (i <= nSqrtFloor) {
 
             // Single Step
             funcG(a_i.get_mpz_t(), a_i.get_mpz_t(), P, X_i);
@@ -148,4 +139,5 @@ void RhoPollard::computeLog(const Point& P, const Point& Q, mpz_t result) {
             }
         }
     }
+    gmp_randclear(state);
 }

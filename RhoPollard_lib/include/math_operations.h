@@ -1,8 +1,9 @@
 #ifndef MATH_OPERATIONS_H
 #define MATH_OPERATIONS_H
 
-#include <bits/stdc++.h>
+#include <cstdint>
 #include <gmp.h>
+#include <iostream>
 
 
 void binMult(mpz_t a, mpz_t b, mpz_t c, uint32_t m);

@@ -52,7 +52,10 @@ bool Curve::isPointOnCurve(const Point& p) {
     mpz_xor(equation.get_mpz_t(), equation.get_mpz_t(), ax2.get_mpz_t());
     mpz_xor(equation.get_mpz_t(), equation.get_mpz_t(), m_b.get_mpz_t());
 
+    mpz_clears(x, y, NULL);
+
     if ( mpz_cmp_ui(equation.get_mpz_t(),0) == 0) {
+
         return true;
     }
     return false;
@@ -73,7 +76,7 @@ void printHex(const char* name, mpz_t a) {
     gmp_printf("%s = 0x%Zx\n", name, a);
 }
 
-Point Curve::pointAddition(Point P, Point Q) {
+Point Curve::pointAddition(Point &P, Point &Q) {
     mpz_class x1(P.getX());
     mpz_class x2(Q.getX());
 
@@ -200,8 +203,9 @@ Point Curve::pointMultiplication(const Point &P, mpz_t a) {
 
     Point q {0, 0, true};
     Point p = P;
+    mpz_class multSize = mpz_sizeinbase(a, 2);
 
-    for (int i = 0; i < mpz_sizeinbase(a,2); i++) {
+    for (int i = 0; i < multSize; i++) {
         // std::cout <<"Step: " <<i <<std::endl;
         if (mpz_tstbit(a, i) == 1) {
             q = pointAddition(p,q);

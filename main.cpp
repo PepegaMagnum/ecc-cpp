@@ -1,20 +1,20 @@
-#include <iostream>
 #include "include/math_operations.h"
 #include "include/Point.h"
 #include "include/Curve.h"
-#include "include/RhoPollard.h"
+#include "RhoPollard_lib/include/TimingStats.h"
+// #include <random>
 
 int main() {
     mpz_class a, b, fz;
     uint32_t m = 163;
     mpz_class n("04000000000000000000020108a2e0cc0d99f8a5ef", 16);
 
-    std::random_device rd;
-    if (rd.entropy() > 0) {
-        std::cout << "Entropia: " << rd.entropy() << std::endl;
-    }
-
-    std::mt19937_64 generator(rd());
+    // std::random_device rd;
+    // if (rd.entropy() > 0) {
+    //     std::cout << "Entropia: " << rd.entropy() << std::endl;
+    // }
+    //
+    // std::mt19937_64 generator(rd());
     mpz_class a_i;
     a_i = 2342134;
 
@@ -41,11 +41,12 @@ int main() {
     uint32_t fieldDivider = 3;
 
     RhoPollard rhoPol(myCurve, n, fieldDivider);
+    TimingStats stats;
 
     for (int i = 0; i < 1000; i++) {
-        rhoPol.computeLog(G, nG, result.get_mpz_t());
-        std::cout << "RhoPollard iteration: " << i << std::endl;
-        std::cout << "result: " << result << std::endl;
+        double ms = timedComputeLog(rhoPol, G, nG, result.get_mpz_t(), stats);
+        std::cout << "iteration " << i << ": " << ms << " ms"
+                  << " (running avg: " << stats.average() << " ms)" << std::endl;
         if (result != 0) {
             pointResult = myCurve.pointMultiplication(G, result.get_mpz_t());
 

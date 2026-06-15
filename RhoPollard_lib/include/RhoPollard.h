@@ -16,7 +16,7 @@ class RhoPollard {
     mpz_class m_mod3Result;
     mpz_class m_resultCoeff;
 
-    Point funcF(Point Xi, Point P, Point Q);
+    Point funcF(Point &Xi, Point &P, Point &Q);
     void funcG(mpz_t result, mpz_t a, const Point& P, const Point& Xi);
     void funcH(mpz_t result, mpz_t b, const Point& P, const Point& Xi);
 
@@ -31,7 +31,7 @@ public:
         m_mod3Result = 0;
         m_resultCoeff = 0;
     }
-    void computeLog(const Point& P, const Point& Q, mpz_t result);
+    void computeLog(Point &P, Point &Q, mpz_t result);
 };
 
 #endif //ECC_CPP_RHOPOLLARD_H

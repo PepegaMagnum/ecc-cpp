@@ -22,7 +22,7 @@ public:
     Curve(mpz_t a, mpz_t b, uint32_t m, mpz_t fz);
     bool isPointOnCurve(const Point& p);
     static Point pointNeg(Point& p);
-    Point pointAddition(Point P, Point Q);
+    Point pointAddition(Point &P, Point &Q);
     Point pointDoubling(const Point& P);
     Point pointMultiplication(const Point &P, mpz_t a);
 };
