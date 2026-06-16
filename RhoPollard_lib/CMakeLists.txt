@@ -4,14 +4,12 @@ set(HEADER_FILES include/math_operations.h
                  include/Point.h
                  include/Curve.h
                  include/RhoPollard.h
-                 include/TimingStats.h
-                 )
+)
 
 set(SOURCE_FILES src/math_operations.cpp
                  src/Point.cpp
                  src/Curve.cpp
                  src/RhoPollard.cpp
-                 src/TimingStats.cpp
 )
 
 find_package(PkgConfig REQUIRED)

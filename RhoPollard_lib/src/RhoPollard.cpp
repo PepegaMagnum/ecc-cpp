@@ -3,6 +3,8 @@
 //
 
 #include "../include/RhoPollard.h"
+
+#include <chrono>
 #include <random>
 #include <utility>
 #include <gmpxx.h>
@@ -58,7 +60,7 @@ void RhoPollard::funcH(mpz_t result, mpz_t b, const Point& P, const Point& Xi) {
 }
 
 void RhoPollard::computeLog(Point &P, Point &Q, mpz_t result) {
-
+    std::cout << "Starting Rho Pollard..." <<std::endl;
     // initial parameters
     mpz_class a_i, b_i, a_2i, b_2i;
     mpz_class a2iTmp;
@@ -81,9 +83,12 @@ void RhoPollard::computeLog(Point &P, Point &Q, mpz_t result) {
     nSqrt = sqrt(m_n);
     mpf_floor(nSqrtFloor.get_mpf_t(), nSqrt.get_mpf_t());
 
+    double totalMs = 0.0;
+    int    attempts = 0;
 
     for (int j = 0; j <= 4; j++) {
         int i = 0;
+        auto attemptStart = std::chrono::steady_clock::now();
         // mpz_set_d(a_i.get_mpz_t(), dis(generator));
         mpz_class randomRange;
         randomRange = m_n - 1;
@@ -100,8 +105,11 @@ void RhoPollard::computeLog(Point &P, Point &Q, mpz_t result) {
         X_i = m_curve.pointAddition(a_iP, b_iQ);
         X_2i = m_curve.pointAddition(a_2iP, b_2iQ);
 
-        while (i <= nSqrtFloor) {
+        double iterTotalUs = 0.0;
+        long iterCount = 0;
 
+        while (i <= nSqrtFloor) {
+            auto iterStart = std::chrono::steady_clock::now();
             // Single Step
             funcG(a_i.get_mpz_t(), a_i.get_mpz_t(), P, X_i);
             funcH(b_i.get_mpz_t(), b_i.get_mpz_t(), P, X_i);
@@ -116,6 +124,15 @@ void RhoPollard::computeLog(Point &P, Point &Q, mpz_t result) {
             funcG(a_2i.get_mpz_t(), a2iTmp.get_mpz_t(), P, X2iTmp);
             funcH(b_2i.get_mpz_t(), b2iTmp.get_mpz_t(), P, X2iTmp);
             X_2i = funcF(X2iTmp, P, Q);
+
+            auto iterEnd = std::chrono::steady_clock::now();
+            iterTotalUs += std::chrono::duration<double, std::micro>(iterEnd - iterStart).count();
+            ++iterCount;
+            if (iterCount % 1000 == 0) {
+                std::cout << "iter " << iterCount
+                  << " | avg: " << (iterTotalUs / iterCount) << " us/iter"
+                  << std::endl;
+            }
 
             if (X_i == X_2i) {
                 std::cout <<"Result found in " <<j+1 <<"th execution of Rho Pollard, iteration: " <<i <<std::endl;
@@ -137,7 +154,16 @@ void RhoPollard::computeLog(Point &P, Point &Q, mpz_t result) {
             } else {
                 i++;
             }
+
         }
+        auto attemptEnd = std::chrono::steady_clock::now();
+        std::chrono::duration<double, std::milli> elapsed = attemptEnd - attemptStart;
+        totalMs += elapsed.count();
+        ++attempts;
+        std::cout << "  attempt " << (j + 1)
+                  << ": " << elapsed.count() << " ms"
+                  << " | running avg: " << (totalMs / attempts) << " ms"
+                  << std::endl;
     }
     gmp_randclear(state);
 }

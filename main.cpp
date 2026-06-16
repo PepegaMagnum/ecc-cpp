@@ -1,7 +1,7 @@
 #include "include/math_operations.h"
 #include "include/Point.h"
 #include "include/Curve.h"
-#include "RhoPollard_lib/include/TimingStats.h"
+#include "RhoPollard_lib/include/RhoPollard.h"
 // #include <random>
 
 int main() {
@@ -41,12 +41,9 @@ int main() {
     uint32_t fieldDivider = 3;
 
     RhoPollard rhoPol(myCurve, n, fieldDivider);
-    TimingStats stats;
 
     for (int i = 0; i < 1000; i++) {
-        double ms = timedComputeLog(rhoPol, G, nG, result.get_mpz_t(), stats);
-        std::cout << "iteration " << i << ": " << ms << " ms"
-                  << " (running avg: " << stats.average() << " ms)" << std::endl;
+        rhoPol.computeLog(G, nG, result.get_mpz_t());
         if (result != 0) {
             pointResult = myCurve.pointMultiplication(G, result.get_mpz_t());
 
