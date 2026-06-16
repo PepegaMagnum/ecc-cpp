@@ -10,7 +10,7 @@ void binMult(mpz_t a, mpz_t b, mpz_t c, uint32_t m) {
     if (mpz_tstbit(a, 0) == 1) {
         mpz_set(c, tmp);
     } else {
-        mpz_set_d(c, 0);
+        mpz_set_ui(c, 0);
     }
 
     for (int i = 1; i < m; i++) {
@@ -39,18 +39,19 @@ void binReduc(mpz_t c, mpz_t fz, uint32_t m) {
     int k;
     mpz_t tmp;
     mpz_init(tmp);
-    for (int i = mpz_sizeinbase(c, 2) - 1; i > m-1; i--) {
+    for (int i = mpz_sizeinbase(c, 2) - 1; i > (int)m-1; i--) {
         if (mpz_tstbit(c, i)) {
             k = i-m;
             mpz_mul_2exp(tmp, fz, k);
             mpz_xor(c,c,tmp);
         }
     }
+    mpz_clear(tmp);
 }
 
 void binInv(mpz_t a, mpz_t fz, uint32_t m) {
     int j;
-    int iter;
+    // int iter;
     mpz_t u, v, g1, g2;
     mpz_t zjv, zjg2, zj;
     mpz_inits(u, v, g1, g2, NULL);
@@ -91,9 +92,9 @@ void binInv(mpz_t a, mpz_t fz, uint32_t m) {
 
         mpz_xor(g1, g1, zjg2);
         // gmp_printf("g1 = 0x%Zx\n", g1);
-        iter++;
+        // iter++;
     }
     mpz_set(a, g1);
     // gmp_printf("a = 0x%Zx\n", a);
-    mpz_clears(u, v, g1, g2, zjv, zjg2, NULL);
+    mpz_clears(u, v, g1, g2, zj, zjv, zjg2, NULL);
 }

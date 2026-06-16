@@ -107,6 +107,8 @@ void RhoPollard::computeLog(Point &P, Point &Q, mpz_t result) {
 
         double iterTotalUs = 0.0;
         long iterCount = 0;
+        double iterMinUs = std::numeric_limits<double>::max();
+        double iterMaxUs = 0.0;
 
         while (i <= nSqrtFloor) {
             auto iterStart = std::chrono::steady_clock::now();
@@ -126,11 +128,18 @@ void RhoPollard::computeLog(Point &P, Point &Q, mpz_t result) {
             X_2i = funcF(X2iTmp, P, Q);
 
             auto iterEnd = std::chrono::steady_clock::now();
-            iterTotalUs += std::chrono::duration<double, std::micro>(iterEnd - iterStart).count();
+            double thisUs = std::chrono::duration<double, std::micro>(iterEnd - iterStart).count();
+            iterTotalUs += thisUs;
+            if (iterCount > 100) {
+                if (thisUs < iterMinUs) iterMinUs = thisUs;
+                if (thisUs > iterMaxUs) iterMaxUs = thisUs;
+            }
             ++iterCount;
-            if (iterCount % 1000 == 0) {
+            if (iterCount % 10000 == 0) {
                 std::cout << "iter " << iterCount
-                  << " | avg: " << (iterTotalUs / iterCount) << " us/iter"
+                  << " | avg: " << (iterTotalUs / iterCount) << " us"
+                  << " | min: " << iterMinUs << " us"
+                  << " | max: " << iterMaxUs << " us"
                   << std::endl;
             }
 
