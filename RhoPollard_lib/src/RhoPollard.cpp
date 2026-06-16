@@ -9,28 +9,23 @@
 #include <utility>
 #include <gmpxx.h>
 
-Point RhoPollard::funcF(Point &Xi, Point &P, Point &Q) {
+int RhoPollard::partition(const Point &X) {
+    mpz_mod(m_mod3Result.get_mpz_t(), X.getX(), m_fieldDivideMod.get_mpz_t());
+    return static_cast<int>(mpz_get_ui(m_mod3Result.get_mpz_t()));
+}
 
-    mpz_mod(m_mod3Result.get_mpz_t(), Xi.getX(), m_fieldDivideMod.get_mpz_t());
-
-    if (m_mod3Result == 0) {
-        return m_curve.pointAddition(Xi, Q);
-    }
-    if (m_mod3Result == 1) {
-        return m_curve.pointDoubling(Xi);
-    }
-
+Point RhoPollard::funcF(Point &Xi, Point &P, Point &Q, int branch) {
+    if (branch == 0) return m_curve.pointAddition(Xi, Q);
+    if (branch == 1) return m_curve.pointDoubling(Xi);
     return m_curve.pointAddition(Xi, P);
 
 }
 
-void RhoPollard::funcG(mpz_t result, mpz_t a, const Point& P, const Point& Xi) {
-    mpz_mod(m_mod3Result.get_mpz_t(), Xi.getX(), m_fieldDivideMod.get_mpz_t());
-
-    if (m_mod3Result == 2) {
+void RhoPollard::funcG(mpz_t result, mpz_t a, int branch) {
+    if (branch == 2) {
         mpz_set_ui(m_resultCoeff.get_mpz_t(), 1);
         mpz_xor(result, a, m_resultCoeff.get_mpz_t());
-    } else if (m_mod3Result == 1) {
+    } else if (branch == 1) {
         mpz_set_ui(m_resultCoeff.get_mpz_t(), 2);
         binMult(m_resultCoeff.get_mpz_t(), a, result, m_curve.m_m);
         binReduc(result, m_curve.m_fz.get_mpz_t(), m_curve.m_m);
@@ -42,14 +37,12 @@ void RhoPollard::funcG(mpz_t result, mpz_t a, const Point& P, const Point& Xi) {
 
 }
 
-void RhoPollard::funcH(mpz_t result, mpz_t b, const Point& P, const Point& Xi) {
+void RhoPollard::funcH(mpz_t result, mpz_t b, int branch) {
 
-    mpz_mod(m_mod3Result.get_mpz_t(), Xi.getX(), m_fieldDivideMod.get_mpz_t());
-
-    if (m_mod3Result == 0) {
+    if (branch == 0) {
         mpz_set_ui(m_resultCoeff.get_mpz_t(), 1);
         mpz_xor(result, b, m_resultCoeff.get_mpz_t());
-    } else if (m_mod3Result == 1) {
+    } else if (branch == 1) {
         mpz_set_ui(m_resultCoeff.get_mpz_t(), 2);
         binMult(m_resultCoeff.get_mpz_t(), b, result, m_curve.m_m);
         binReduc(result, m_curve.m_fz.get_mpz_t(), m_curve.m_m);
@@ -86,6 +79,9 @@ void RhoPollard::computeLog(Point &P, Point &Q, mpz_t result) {
     double totalMs = 0.0;
     int    attempts = 0;
 
+    bool collided = false;
+    bool found = false;
+
     for (int j = 0; j <= 4; j++) {
         int i = 0;
         auto attemptStart = std::chrono::steady_clock::now();
@@ -113,19 +109,22 @@ void RhoPollard::computeLog(Point &P, Point &Q, mpz_t result) {
         while (i <= nSqrtFloor) {
             auto iterStart = std::chrono::steady_clock::now();
             // Single Step
-            funcG(a_i.get_mpz_t(), a_i.get_mpz_t(), P, X_i);
-            funcH(b_i.get_mpz_t(), b_i.get_mpz_t(), P, X_i);
-            X_i = funcF(X_i, P, Q);
+            int branch_i = partition(X_i);
+            funcG(a_i.get_mpz_t(), a_i.get_mpz_t(), branch_i);
+            funcH(b_i.get_mpz_t(), b_i.get_mpz_t(), branch_i);
+            X_i = funcF(X_i, P, Q, branch_i);
 
             // Double Step
-            X2iTmp = funcF(X_2i, P, Q);
+            int branch_2i = partition(X_2i);
+            X2iTmp = funcF(X_2i, P, Q, branch_2i);
 
-            funcG(a2iTmp.get_mpz_t(), a_2i.get_mpz_t(), P, X_2i);
-            funcH(b2iTmp.get_mpz_t(), b_2i.get_mpz_t(), P, X_2i);
+            funcG(a2iTmp.get_mpz_t(), a_2i.get_mpz_t(), branch_2i);
+            funcH(b2iTmp.get_mpz_t(), b_2i.get_mpz_t(), branch_2i);
 
-            funcG(a_2i.get_mpz_t(), a2iTmp.get_mpz_t(), P, X2iTmp);
-            funcH(b_2i.get_mpz_t(), b2iTmp.get_mpz_t(), P, X2iTmp);
-            X_2i = funcF(X2iTmp, P, Q);
+            int branch_tmp = partition(X2iTmp);
+            funcG(a_2i.get_mpz_t(), a2iTmp.get_mpz_t(), branch_tmp);
+            funcH(b_2i.get_mpz_t(), b2iTmp.get_mpz_t(), branch_tmp);
+            X_2i = funcF(X2iTmp, P, Q, branch_tmp);
 
             auto iterEnd = std::chrono::steady_clock::now();
             double thisUs = std::chrono::duration<double, std::micro>(iterEnd - iterStart).count();
@@ -145,10 +144,18 @@ void RhoPollard::computeLog(Point &P, Point &Q, mpz_t result) {
 
             if (X_i == X_2i) {
                 std::cout <<"Result found in " <<j+1 <<"th execution of Rho Pollard, iteration: " <<i <<std::endl;
+                collided = true;
+                break;
+            } else {
+                i++;
+            }
 
-                if (mpz_cmp(b_i.get_mpz_t(), b_2i.get_mpz_t()) == 0)
-                    break;
+        }
 
+        if (collided) {
+            if (mpz_cmp(b_i.get_mpz_t(), b_2i.get_mpz_t()) == 0) {
+
+            } else {
                 mpz_sub(bCoeffSub.get_mpz_t(), b_2i.get_mpz_t(), b_i.get_mpz_t());
 
                 mpz_gcd(gcd.get_mpz_t(), bCoeffSub.get_mpz_t(), m_n.get_mpz_t());
@@ -158,13 +165,11 @@ void RhoPollard::computeLog(Point &P, Point &Q, mpz_t result) {
                     mpz_invert(bCoeffSubInv.get_mpz_t(), bCoeffSub.get_mpz_t(), m_n.get_mpz_t());
                     mpz_mul(result, aCoeffSub.get_mpz_t(), bCoeffSubInv.get_mpz_t());
                     mpz_mod(result, result, m_n.get_mpz_t());
+                    found = true;
                 }
-
-            } else {
-                i++;
             }
-
         }
+
         auto attemptEnd = std::chrono::steady_clock::now();
         std::chrono::duration<double, std::milli> elapsed = attemptEnd - attemptStart;
         totalMs += elapsed.count();
@@ -173,6 +178,7 @@ void RhoPollard::computeLog(Point &P, Point &Q, mpz_t result) {
                   << ": " << elapsed.count() << " ms"
                   << " | running avg: " << (totalMs / attempts) << " ms"
                   << std::endl;
+        if (found) break;
     }
     gmp_randclear(state);
 }

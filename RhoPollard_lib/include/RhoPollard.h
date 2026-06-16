@@ -16,10 +16,10 @@ class RhoPollard {
     mpz_class m_mod3Result;
     mpz_class m_resultCoeff;
 
-    Point funcF(Point &Xi, Point &P, Point &Q);
-    void funcG(mpz_t result, mpz_t a, const Point& P, const Point& Xi);
-    void funcH(mpz_t result, mpz_t b, const Point& P, const Point& Xi);
-
+    Point funcF(Point &Xi, Point &P, Point &Q, int branch);
+    void funcG(mpz_t result, mpz_t a, int branch);
+    void funcH(mpz_t result, mpz_t b, int branch);
+    int partition(const Point& X);
 
 
 public:
