@@ -128,12 +128,12 @@ void RhoPollard::computeLog(Point &P, Point &Q, mpz_t result) {
             auto iterEnd = std::chrono::steady_clock::now();
             double thisUs = std::chrono::duration<double, std::micro>(iterEnd - iterStart).count();
             iterTotalUs += thisUs;
-            if (iterCount > 100) {
+            if (iterCount > m_skipIterReportCount) {
                 if (thisUs < iterMinUs) iterMinUs = thisUs;
                 if (thisUs > iterMaxUs) iterMaxUs = thisUs;
             }
             ++iterCount;
-            if (iterCount % 10000 == 0) {
+            if (iterCount % m_iterNReport == 0) {
                 std::cout << "iter " << iterCount
                   << " | avg: " << (iterTotalUs / iterCount) << " us"
                   << " | min: " << iterMinUs << " us"
@@ -142,19 +142,10 @@ void RhoPollard::computeLog(Point &P, Point &Q, mpz_t result) {
             }
 
             if (X_i == X_2i) {
-                std::cout <<"Result found in " <<j+1 <<"th execution of Rho Pollard, iteration: " <<i <<std::endl;
-                collided = true;
-                break;
-            } else {
-                i++;
-            }
+                std::cout <<"Collision found during " <<j+1 <<"th execution of Rho Pollard, iteration: " <<i <<std::endl;
+                if (mpz_cmp(b_i.get_mpz_t(), b_2i.get_mpz_t()) == 0)
+                    break;
 
-        }
-
-        if (collided) {
-            if (mpz_cmp(b_i.get_mpz_t(), b_2i.get_mpz_t()) == 0) {
-                
-            } else {
                 mpz_sub(bCoeffSub.get_mpz_t(), b_2i.get_mpz_t(), b_i.get_mpz_t());
 
                 mpz_gcd(gcd.get_mpz_t(), bCoeffSub.get_mpz_t(), m_n.get_mpz_t());
@@ -164,9 +155,11 @@ void RhoPollard::computeLog(Point &P, Point &Q, mpz_t result) {
                     mpz_invert(bCoeffSubInv.get_mpz_t(), bCoeffSub.get_mpz_t(), m_n.get_mpz_t());
                     mpz_mul(result, aCoeffSub.get_mpz_t(), bCoeffSubInv.get_mpz_t());
                     mpz_mod(result, result, m_n.get_mpz_t());
-                    found = true;
                 }
+            } else {
+                i++;
             }
+
         }
 
         auto attemptEnd = std::chrono::steady_clock::now();
@@ -177,7 +170,6 @@ void RhoPollard::computeLog(Point &P, Point &Q, mpz_t result) {
                   << ": " << elapsed.count() << " ms"
                   << " | running avg: " << (totalMs / attempts) << " ms"
                   << std::endl;
-        if (found) break;
     }
     gmp_randclear(state);
 }

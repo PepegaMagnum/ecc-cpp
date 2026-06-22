@@ -1,63 +1,82 @@
+#include <iostream>
+#include <unistd.h>
+
 #include "include/math_operations.h"
 #include "include/Point.h"
 #include "include/Curve.h"
-#include "RhoPollard_lib/include/RhoPollard.h"
-// #include <random>
+#include "include/RhoPollard.h"
+
+static std::string readParameter(const char* prompt) {
+    if (isatty(0)) std::cout << prompt << std::flush;
+    std::string tok;
+    if (!(std::cin >> tok)) {
+        std::cerr << "ERROR: ran out of input while reading: " << prompt << "\n";
+        std::exit(1);
+    }
+    return tok;
+}
 
 int main() {
-    mpz_class a, b, fz;
-    uint32_t m = 4;
-    mpz_class n("B", 16);
 
-    // std::random_device rd;
-    // if (rd.entropy() > 0) {
-    //     std::cout << "Entropia: " << rd.entropy() << std::endl;
-    // }
-    //
-    // std::mt19937_64 generator(rd());
-    mpz_class a_i;
-    a_i = 7;
+    uint32_t m = (uint32_t)std::stoul(readParameter("m (decimal): "));
+    std::string a_hex  = readParameter("a  (hex): ");
+    std::string b_hex  = readParameter("b  (hex): ");
+    std::string fz_hex = readParameter("fz (hex): ");
+    std::string Gx_hex = readParameter("Gx (hex): ");
+    std::string Gy_hex = readParameter("Gy (hex): ");
+    std::string n_dec  = readParameter("n  (decimal): ");
+    std::string k_dec  = readParameter("k  (decimal, target = k*G): ");
 
-    mpz_set_str(a.get_mpz_t(), "8", 16);
-    mpz_set_str(b.get_mpz_t(), "9", 16);
-    mpz_set_str(fz.get_mpz_t(), "13", 16);
-
-    Point G("8", "1");
-
-    // G.print();
-    Curve myCurve(a.get_mpz_t(), b.get_mpz_t(), m, fz.get_mpz_t());
-    Point nG = myCurve.pointMultiplication(G, a_i.get_mpz_t());
-    // nG.print();
-    std::cout << "Multiplying by " <<a_i << std::endl;
-
-    nG.print();
-
-    if (myCurve.isPointOnCurve(nG)) {
-        std::cout << "n*G is on the curve" << std::endl;
-    }
-
-    mpz_class result;
-    Point pointResult;
     uint32_t fieldDivider = 3;
 
-    RhoPollard rhoPol(myCurve, n, fieldDivider);
+    mpz_class a, b, fz, n, k;
+    mpz_set_str(a.get_mpz_t(),  a_hex.c_str(),  16);
+    mpz_set_str(b.get_mpz_t(),  b_hex.c_str(),  16);
+    mpz_set_str(fz.get_mpz_t(), fz_hex.c_str(), 16);
+    mpz_set_str(n.get_mpz_t(),  n_dec.c_str(),  10);
+    mpz_set_str(k.get_mpz_t(),  k_dec.c_str(),  10);
+
+    Curve myCurve(a.get_mpz_t(), b.get_mpz_t(), m, fz.get_mpz_t());
+    Point G(Gx_hex.c_str(), Gy_hex.c_str());
+
+    if (!myCurve.isPointOnCurve(G)) {
+        std::cerr << "ERROR: generator G is not on the curve. "
+        "Check a, b, fz, Gx, Gy" << std::endl;
+        return 1;
+    }
+
+    Point kG = myCurve.pointMultiplication(G, k.get_mpz_t());
+    std::cout << "Computing target Q = " << k << " * G" <<std::endl;
+    kG.print();
+
+    if (!myCurve.isPointOnCurve(kG)) {
+        std::cerr << "ERROR: k*G is not on the curve." << std::endl;
+        return 1;
+    }
+    std::cout << "Q is on the curve." << std::endl;
+
+
+    RhoPollard rhoPol(myCurve, n, fieldDivider, 1, 0);
+    mpz_class result;
+    Point pointResult;
 
     for (int i = 0; i < 1000; i++) {
-        rhoPol.computeLog(G, nG, result.get_mpz_t());
+        rhoPol.computeLog(G, kG, result.get_mpz_t());
         if (result != 0) {
             pointResult = myCurve.pointMultiplication(G, result.get_mpz_t());
 
-            if (pointResult == nG) {
+            if (pointResult == kG) {
                 std::cout << "Valid result found: " << result << std::endl;
                 return 0;
             }
             std::cout << "Algorithm executed but no valid result was found: " <<std::endl;
             std::cout << "Calculated result: " <<result << std::endl;
 
-            std::cout << "nG: " <<std::endl;
-            nG.print();
-            std::cout << "Calculated nG: " <<std::endl;
+            std::cout << "Q: " <<std::endl;
+            kG.print();
+            std::cout << "Calculated Q: " <<std::endl;
             pointResult.print();
+            return 1;
         }
     }
     std::cout << "No result after 1000 runs of pollard's rho." << std::endl;
