@@ -64,11 +64,9 @@ bool Curve::isPointOnCurve(const Point& p) {
 Point Curve::pointNeg(Point& p) {
     mpz_t newY;
     mpz_init(newY);
-    Point result(p.getX(), p.getY(), false);
     mpz_xor(newY, p.getY(), p.getX());
-    p.setY(newY);
+    Point result(p.getX(), newY, p.getIsInfinity());
     mpz_clear(newY);
-
     return result;
 }
 
@@ -77,79 +75,71 @@ void printHex(const char* name, mpz_t a) {
 }
 
 Point Curve::pointAddition(Point &P, Point &Q) {
+    if (P.getIsInfinity() ) return Q;
+    if (Q.getIsInfinity() ) return P;
+
     mpz_class x1(P.getX());
     mpz_class x2(Q.getX());
-
     mpz_class y1(P.getY());
     mpz_class y2(Q.getY());
 
-    if (P != Q) {
-        if (P == pointNeg(Q)) {
-            // std::cout << "P is negation of Q" <<std::endl;
-            return Point{0, 0, true};
+
+    if (mpz_cmp(x1.get_mpz_t(), x2.get_mpz_t()) == 0) {
+        if (mpz_cmp(y1.get_mpz_t(), y2.get_mpz_t()) == 0) {
+            return pointDoubling(P);
+        } else {
+            return Point{0, 0, true};    // P == -Q, sum is infinity
         }
-
-        if (Q.getIsInfinity() ) {
-            // std::cout << "Q is infinity" <<std::endl;
-            return P;
-        }
-
-        if (P.getIsInfinity() ) {
-            // std::cout << "P is infinity" <<std::endl;
-            return Q;
-        }
-
-        mpz_class lambda;
-        mpz_class lambda2;
-        mpz_class y1y2;
-        mpz_class x1x2inv;
-        mpz_class x1x2;
-        mpz_class x1x3;
-
-        mpz_class x3;
-        mpz_class y3;
-
-        // lambda calculation
-        mpz_xor(x1x2.get_mpz_t(), x1.get_mpz_t(), x2.get_mpz_t());
-        // printHex("x1x2", x1x2.get_mpz_t());
-        mpz_xor(y1y2.get_mpz_t(), y1.get_mpz_t(), y2.get_mpz_t());
-        // printHex("y1y2", y1y2.get_mpz_t());
-        mpz_set(x1x2inv.get_mpz_t(), x1x2.get_mpz_t());
-        binInv(x1x2inv.get_mpz_t(), m_fz.get_mpz_t(), m_m);
-        // printHex("x1x2inv", x1x2inv.get_mpz_t());
-        binMult(y1y2.get_mpz_t(), x1x2inv.get_mpz_t(), lambda.get_mpz_t(), m_m);
-        // printHex("lambda", lambda.get_mpz_t());
-
-        binSquare(lambda2.get_mpz_t(), lambda.get_mpz_t());
-        // printHex("lambda2", lambda2.get_mpz_t());
-
-        mpz_set(x3.get_mpz_t(), lambda2.get_mpz_t());
-        mpz_xor(x3.get_mpz_t(), x3.get_mpz_t(), lambda.get_mpz_t());
-        mpz_xor(x3.get_mpz_t(), x3.get_mpz_t(), x1.get_mpz_t());
-        mpz_xor(x3.get_mpz_t(), x3.get_mpz_t(), m_a.get_mpz_t());
-        mpz_xor(x3.get_mpz_t(), x3.get_mpz_t(), x2.get_mpz_t());
-
-        mpz_set_d(y3.get_mpz_t(), 0);
-        mpz_xor(x1x3.get_mpz_t(), x1.get_mpz_t(),x3.get_mpz_t());
-        // printHex("x1 + x3", x1x3.get_mpz_t());
-
-        binMult(lambda.get_mpz_t(), x1x3.get_mpz_t(), y3.get_mpz_t(), 2*m_m);
-        // printHex("(x1+x3)Lambda", y3.get_mpz_t());
-        mpz_xor(y3.get_mpz_t(), y3.get_mpz_t(), x3.get_mpz_t());
-
-        mpz_xor(y3.get_mpz_t(), y3.get_mpz_t(), y1.get_mpz_t());
-
-        // printHex("x3", x3.get_mpz_t());
-        // printHex("y3", y3.get_mpz_t());
-
-        binReduc(x3.get_mpz_t(), m_fz.get_mpz_t(),m_m);
-        binReduc(y3.get_mpz_t(), m_fz.get_mpz_t(),m_m);
-
-        return Point {x3.get_mpz_t(), y3.get_mpz_t(), false};;
-
-    } else {
-        return pointDoubling(P);
     }
+
+
+    mpz_class lambda;
+    mpz_class lambda2;
+    mpz_class y1y2;
+    mpz_class x1x2inv;
+    mpz_class x1x2;
+    mpz_class x1x3;
+
+    mpz_class x3;
+    mpz_class y3;
+
+    // lambda calculation
+    mpz_xor(x1x2.get_mpz_t(), x1.get_mpz_t(), x2.get_mpz_t());
+    // printHex("x1x2", x1x2.get_mpz_t());
+    mpz_xor(y1y2.get_mpz_t(), y1.get_mpz_t(), y2.get_mpz_t());
+    // printHex("y1y2", y1y2.get_mpz_t());
+    mpz_set(x1x2inv.get_mpz_t(), x1x2.get_mpz_t());
+    binInv(x1x2inv.get_mpz_t(), m_fz.get_mpz_t(), m_m);
+    // printHex("x1x2inv", x1x2inv.get_mpz_t());
+    binMult(y1y2.get_mpz_t(), x1x2inv.get_mpz_t(), lambda.get_mpz_t(), m_m);
+    // printHex("lambda", lambda.get_mpz_t());
+
+    binSquare(lambda2.get_mpz_t(), lambda.get_mpz_t());
+    // printHex("lambda2", lambda2.get_mpz_t());
+
+    mpz_set(x3.get_mpz_t(), lambda2.get_mpz_t());
+    mpz_xor(x3.get_mpz_t(), x3.get_mpz_t(), lambda.get_mpz_t());
+    mpz_xor(x3.get_mpz_t(), x3.get_mpz_t(), x1.get_mpz_t());
+    mpz_xor(x3.get_mpz_t(), x3.get_mpz_t(), m_a.get_mpz_t());
+    mpz_xor(x3.get_mpz_t(), x3.get_mpz_t(), x2.get_mpz_t());
+
+    mpz_set_d(y3.get_mpz_t(), 0);
+    mpz_xor(x1x3.get_mpz_t(), x1.get_mpz_t(),x3.get_mpz_t());
+    // printHex("x1 + x3", x1x3.get_mpz_t());
+
+    binMult(lambda.get_mpz_t(), x1x3.get_mpz_t(), y3.get_mpz_t(), 2*m_m);
+    // printHex("(x1+x3)Lambda", y3.get_mpz_t());
+    mpz_xor(y3.get_mpz_t(), y3.get_mpz_t(), x3.get_mpz_t());
+
+    mpz_xor(y3.get_mpz_t(), y3.get_mpz_t(), y1.get_mpz_t());
+
+    // printHex("x3", x3.get_mpz_t());
+    // printHex("y3", y3.get_mpz_t());
+
+    binReduc(x3.get_mpz_t(), m_fz.get_mpz_t(),m_m);
+    binReduc(y3.get_mpz_t(), m_fz.get_mpz_t(),m_m);
+
+    return Point {x3.get_mpz_t(), y3.get_mpz_t(), false};;
 
 }
 

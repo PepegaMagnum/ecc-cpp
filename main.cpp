@@ -6,8 +6,8 @@
 
 int main() {
     mpz_class a, b, fz;
-    uint32_t m = 163;
-    mpz_class n("04000000000000000000020108a2e0cc0d99f8a5ef", 16);
+    uint32_t m = 4;
+    mpz_class n("B", 16);
 
     // std::random_device rd;
     // if (rd.entropy() > 0) {
@@ -16,13 +16,13 @@ int main() {
     //
     // std::mt19937_64 generator(rd());
     mpz_class a_i;
-    a_i = 2342134;
+    a_i = 7;
 
-    mpz_set_str(a.get_mpz_t(), "1", 16);
-    mpz_set_str(b.get_mpz_t(), "1", 16);
-    mpz_set_str(fz.get_mpz_t(), "800000000000000000000000000000000000000C9", 16);
+    mpz_set_str(a.get_mpz_t(), "8", 16);
+    mpz_set_str(b.get_mpz_t(), "9", 16);
+    mpz_set_str(fz.get_mpz_t(), "13", 16);
 
-    Point G("02fe13c0537bbc11acaa07d793de4e6d5e5c94eee8", "0289070fb05d38ff58321f2e800536d538ccdaa3d9");
+    Point G("8", "1");
 
     // G.print();
     Curve myCurve(a.get_mpz_t(), b.get_mpz_t(), m, fz.get_mpz_t());
@@ -58,8 +58,8 @@ int main() {
             nG.print();
             std::cout << "Calculated nG: " <<std::endl;
             pointResult.print();
-            return 1;
         }
     }
+    std::cout << "No result after 1000 runs of pollard's rho." << std::endl;
     return 1;
 }

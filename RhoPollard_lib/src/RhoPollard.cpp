@@ -79,10 +79,9 @@ void RhoPollard::computeLog(Point &P, Point &Q, mpz_t result) {
     double totalMs = 0.0;
     int    attempts = 0;
 
-    bool collided = false;
-    bool found = false;
-
     for (int j = 0; j <= 4; j++) {
+        bool collided = false;
+        bool found = false;
         int i = 0;
         auto attemptStart = std::chrono::steady_clock::now();
         // mpz_set_d(a_i.get_mpz_t(), dis(generator));
@@ -154,7 +153,7 @@ void RhoPollard::computeLog(Point &P, Point &Q, mpz_t result) {
 
         if (collided) {
             if (mpz_cmp(b_i.get_mpz_t(), b_2i.get_mpz_t()) == 0) {
-
+                
             } else {
                 mpz_sub(bCoeffSub.get_mpz_t(), b_2i.get_mpz_t(), b_i.get_mpz_t());
 
