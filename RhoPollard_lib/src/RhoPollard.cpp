@@ -22,33 +22,28 @@ Point RhoPollard::funcF(Point &Xi, Point &P, Point &Q, int branch) {
 }
 
 void RhoPollard::funcG(mpz_t result, mpz_t a, int branch) {
-    if (branch == 2) {
-        mpz_set_ui(m_resultCoeff.get_mpz_t(), 1);
-        mpz_xor(result, a, m_resultCoeff.get_mpz_t());
-    } else if (branch == 1) {
-        mpz_set_ui(m_resultCoeff.get_mpz_t(), 2);
-        binMult(m_resultCoeff.get_mpz_t(), a, result, m_curve.m_m);
-        binReduc(result, m_curve.m_fz.get_mpz_t(), m_curve.m_m);
-    } else {
-        mpz_set_ui(m_resultCoeff.get_mpz_t(), 1);
-        mpz_xor(result, a, m_resultCoeff.get_mpz_t());
-        binReduc(result, m_curve.m_fz.get_mpz_t(), m_curve.m_m);
+    // a is the P-coefficient; mirror funcF's action on the point
+    if (branch == 0) {            // funcF added Q -> a unchanged
+        mpz_set(result, a);
+    } else if (branch == 1) {     // funcF doubled -> a -> 2a mod n
+        mpz_mul_ui(result, a, 2);
+        mpz_mod(result, result, m_n.get_mpz_t());
+    } else {                      // branch 2: funcF added P -> a -> a+1 mod n
+        mpz_add_ui(result, a, 1);
+        mpz_mod(result, result, m_n.get_mpz_t());
     }
-
 }
 
 void RhoPollard::funcH(mpz_t result, mpz_t b, int branch) {
-
-    if (branch == 0) {
-        mpz_set_ui(m_resultCoeff.get_mpz_t(), 1);
-        mpz_xor(result, b, m_resultCoeff.get_mpz_t());
-    } else if (branch == 1) {
-        mpz_set_ui(m_resultCoeff.get_mpz_t(), 2);
-        binMult(m_resultCoeff.get_mpz_t(), b, result, m_curve.m_m);
-        binReduc(result, m_curve.m_fz.get_mpz_t(), m_curve.m_m);
-    } else {
-        mpz_set_ui(m_resultCoeff.get_mpz_t(), 1);
-        mpz_xor(result, b, m_resultCoeff.get_mpz_t());
+    // b is the Q-coefficient
+    if (branch == 0) {            // funcF added Q -> b -> b+1 mod n
+        mpz_add_ui(result, b, 1);
+        mpz_mod(result, result, m_n.get_mpz_t());
+    } else if (branch == 1) {     // funcF doubled -> b -> 2b mod n
+        mpz_mul_ui(result, b, 2);
+        mpz_mod(result, result, m_n.get_mpz_t());
+    } else {                      // branch 2: funcF added P -> b unchanged
+        mpz_set(result, b);
     }
 }
 
