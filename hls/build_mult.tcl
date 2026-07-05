@@ -1,0 +1,8 @@
+set PROJ_NAME VitisRho_mult
+source setup_common.tcl
+ 
+add_files -tb gf_field_tb.cpp -cflags "-I../RhoPollard_lib/include -lgmp"
+ 
+set_top gf163_mult
+csim_design   -ldflags "-lgmp"
+csynth_design
