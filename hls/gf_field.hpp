@@ -54,6 +54,13 @@ ap_uint<2 * M> gf_square_raw(ap_uint<M> a) {
 }
  
 template <int M>
+ap_uint<M> gf_square(ap_uint<M> a, ap_uint<M> modlow) {
+#pragma HLS INLINE
+    ap_uint<2 * M> raw = gf_square_raw<M>(a);
+    return gf_reduce<M>(raw, modlow);
+}
+
+template <int M>
 ap_uint<M> gf_square_n(ap_uint<M> a, int n, ap_uint<M> modlow) {
 #pragma HLS INLINE off
     ap_uint<M> r = a;
@@ -64,25 +71,31 @@ ap_uint<M> gf_square_n(ap_uint<M> a, int n, ap_uint<M> modlow) {
     return r;
 }
 
+
 template <int M>
 ap_uint<M> gf_inv_it163(ap_uint<M> a, ap_uint<M> modlow) {
 #pragma HLS INLINE off
-  if(a == 0) return 0;
-
-  ap_uint<M> b1 = a;
-  ap_uint<M> b2  = gf_mult<M>(gf_square_n<M>(b1, 1, modlow),  b1,  modlow);
-  ap_uint<M> b4  = gf_mult<M>(gf_square_n<M>(b2, 2, modlow),  b2,  modlow);
-  ap_uint<M> b5  = gf_mult<M>(gf_square_n<M>(b4, 1, modlow),  b1,  modlow); 
-
-  ap_uint<M> b10 = gf_mult<M>(gf_square_n<M>(b5, 5, modlow),  b5,  modlow);
-  ap_uint<M> b20 = gf_mult<M>(gf_square_n<M>(b10,10, modlow), b10, modlow);
-  ap_uint<M> b40 = gf_mult<M>(gf_square_n<M>(b20,20, modlow), b20, modlow);
-  ap_uint<M> b80 = gf_mult<M>(gf_square_n<M>(b40,40, modlow), b40, modlow);
-  ap_uint<M> b81 = gf_mult<M>(gf_square_n<M>(b80, 1, modlow), b1,  modlow);
-  ap_uint<M> b162= gf_mult<M>(gf_square_n<M>(b81,81, modlow), b81, modlow);
-
-  return gf_square<M>(b162, modlow);
+#pragma HLS ALLOCATION operation instances=mul limit=1
+    if (a == 0) return 0;
+ 
+    // chain step table: {source index, squaring count, multiply-partner index}
+    const int SRC[9]     = {0, 1, 2, 3, 4,  5,  6,  7,  8};
+    const int SQC[9]     = {1, 2, 1, 5, 10, 20, 40, 1,  81};
+    const int PARTNER[9] = {0, 1, 0, 3, 4,  5,  6,  0,  8};
+ 
+    ap_uint<M> res[10];
+#pragma HLS ARRAY_PARTITION variable=res complete dim=1
+    res[0] = a;
+ 
+    for (int s = 0; s < 9; s++) {
+#pragma HLS PIPELINE off
+        ap_uint<M> t = gf_square_n<M>(res[SRC[s]], SQC[s], modlow);
+        t = gf_mult<M>(t, res[PARTNER[s]], modlow);
+        res[s + 1] = t;
+    }
+    return gf_square<M>(res[9], modlow);
 }
+
 
 template <int M>
 ap_uint<M> gf_inv_it7(ap_uint<M> a, ap_uint<M> modlow) {
