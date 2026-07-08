@@ -1,0 +1,140 @@
+
+****** Vitis HLS - High-Level Synthesis from C, C++ and OpenCL v2022.2 (64-bit)
+  **** SW Build 3670227 on Oct 13 2022
+  **** IP Build 3669848 on Fri Oct 14 08:30:02 MDT 2022
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+
+source /tools/Xilinx/Vitis_HLS/2022.2/scripts/vitis_hls/hls.tcl -notrace
+INFO: [HLS 200-10] Running '/tools/Xilinx/Vitis_HLS/2022.2/bin/unwrapped/lnx64.o/vitis_hls'
+INFO: [HLS 200-10] For user 'shen' on host 'shen-B650-EAGLE-AX' (Linux_x86_64 version 6.8.0-124-generic) on Wed Jul 08 15:29:56 CEST 2026
+INFO: [HLS 200-10] On os Ubuntu 22.04.5 LTS
+INFO: [HLS 200-10] In directory '/home/shen/CLionProjects/ecc-cpp/hls'
+Sourcing Tcl script 'build_point_ops.tcl'
+INFO: [HLS 200-1510] Running: open_project VitisRho_pointops 
+INFO: [HLS 200-10] Opening project '/home/shen/CLionProjects/ecc-cpp/hls/VitisRho_pointops'.
+INFO: [HLS 200-1510] Running: add_files point_ops_163.cpp 
+INFO: [HLS 200-10] Adding design file 'point_ops_163.cpp' to the project
+INFO: [HLS 200-1510] Running: add_files gf163_ops.cpp 
+INFO: [HLS 200-10] Adding design file 'gf163_ops.cpp' to the project
+INFO: [HLS 200-1510] Running: add_files -tb point_ops_tb.cpp -cflags -I../RhoPollard_lib/include -lgmp 
+INFO: [HLS 200-10] Adding test bench file 'point_ops_tb.cpp' to the project
+INFO: [HLS 200-1510] Running: add_files -tb ../RhoPollard_lib/src/Curve.cpp -cflags -I../RhoPollard_lib/include 
+INFO: [HLS 200-10] Adding test bench file '../RhoPollard_lib/src/Curve.cpp' to the project
+INFO: [HLS 200-1510] Running: add_files -tb ../RhoPollard_lib/src/Point.cpp -cflags -I../RhoPollard_lib/include 
+INFO: [HLS 200-10] Adding test bench file '../RhoPollard_lib/src/Point.cpp' to the project
+INFO: [HLS 200-1510] Running: add_files -tb ../RhoPollard_lib/src/math_operations.cpp -cflags -I../RhoPollard_lib/include 
+INFO: [HLS 200-10] Adding test bench file '../RhoPollard_lib/src/math_operations.cpp' to the project
+INFO: [HLS 200-1510] Running: open_solution solution1 -flow_target vitis 
+INFO: [HLS 200-10] Opening solution '/home/shen/CLionProjects/ecc-cpp/hls/VitisRho_pointops/solution1'.
+INFO: [SYN 201-201] Setting up clock 'default' with a period of 10ns.
+INFO: [HLS 200-1611] Setting target device to 'xc7z020-clg400-1'
+INFO: [HLS 200-1505] Using flow_target 'vitis'
+Resolution: For help on HLS 200-1505 see www.xilinx.com/cgi-bin/docs/rdoc?v=2022.2;t=hls+guidance;d=200-1505.html
+INFO: [HLS 200-1464] Running solution command: config_interface -m_axi_latency=64
+INFO: [HLS 200-1464] Running solution command: config_interface -m_axi_alignment_byte_size=64
+INFO: [HLS 200-1464] Running solution command: config_interface -m_axi_max_widen_bitwidth=512
+INFO: [HLS 200-1464] Running solution command: config_interface -default_interface=kernel
+INFO: [HLS 200-1464] Running solution command: config_rtl -register_reset_num=3
+INFO: [HLS 200-1510] Running: set_part xc7z020clg400-1 
+INFO: [HLS 200-1510] Running: create_clock -period 10 -name default 
+INFO: [HLS 200-1510] Running: set_top point_add_163 
+INFO: [HLS 200-1510] Running: csim_design -ldflags -L/usr/local/include -lgmpxx -lgmp 
+Running Dispatch Server on port: 33631
+INFO: [SIM 211-2] *************** CSIM start ***************
+INFO: [SIM 211-4] CSIM will launch GCC as the compiler.
+   Compiling ../../../../../RhoPollard_lib/src/Point.cpp in debug mode
+In file included from ../../../../../RhoPollard_lib/src/../include/Point.h:8,
+                 from ../../../../../RhoPollard_lib/src/Point.cpp:5:
+/usr/local/include/gmpxx.h: In static member function ‘static int __gmp_cmp_function::eval(mpq_srcptr, mpz_srcptr)’:
+/usr/local/include/gmpxx.h:929:12: error: ‘mpq_cmp_z’ was not declared in this scope
+   { return mpq_cmp_z(q, z); }
+            ^~~~~~~~~
+/usr/local/include/gmpxx.h:929:12: note: suggested alternative: ‘mpz_cmp_d’
+   { return mpq_cmp_z(q, z); }
+            ^~~~~~~~~
+            mpz_cmp_d
+/usr/local/include/gmpxx.h: In static member function ‘static int __gmp_cmp_function::eval(mpz_srcptr, mpq_srcptr)’:
+/usr/local/include/gmpxx.h:931:13: error: ‘mpq_cmp_z’ was not declared in this scope
+   { return -mpq_cmp_z(q, z); }
+             ^~~~~~~~~
+/usr/local/include/gmpxx.h:931:13: note: suggested alternative: ‘mpz_cmp_d’
+   { return -mpq_cmp_z(q, z); }
+             ^~~~~~~~~
+             mpz_cmp_d
+/usr/local/include/gmpxx.h: In static member function ‘static int __gmp_cmp_function::eval(mpf_srcptr, mpz_srcptr)’:
+/usr/local/include/gmpxx.h:948:12: error: ‘mpf_cmp_z’ was not declared in this scope
+   { return mpf_cmp_z(f, z); }
+            ^~~~~~~~~
+/usr/local/include/gmpxx.h:948:12: note: suggested alternative: ‘mpf_cmp_d’
+   { return mpf_cmp_z(f, z); }
+            ^~~~~~~~~
+            mpf_cmp_d
+/usr/local/include/gmpxx.h: In static member function ‘static int __gmp_cmp_function::eval(mpz_srcptr, mpf_srcptr)’:
+/usr/local/include/gmpxx.h:950:13: error: ‘mpf_cmp_z’ was not declared in this scope
+   { return -mpf_cmp_z(f, z); }
+             ^~~~~~~~~
+/usr/local/include/gmpxx.h:950:13: note: suggested alternative: ‘mpf_cmp_d’
+   { return -mpf_cmp_z(f, z); }
+             ^~~~~~~~~
+             mpf_cmp_d
+/usr/local/include/gmpxx.h: In static member function ‘static bool __gmp_binary_equal::eval(mpf_srcptr, mpz_srcptr)’:
+/usr/local/include/gmpxx.h:1020:12: error: ‘mpf_cmp_z’ was not declared in this scope
+   { return mpf_cmp_z(f, z) == 0; }
+            ^~~~~~~~~
+/usr/local/include/gmpxx.h:1020:12: note: suggested alternative: ‘mpf_cmp_d’
+   { return mpf_cmp_z(f, z) == 0; }
+            ^~~~~~~~~
+            mpf_cmp_d
+/usr/local/include/gmpxx.h: In static member function ‘static bool __gmp_binary_less::eval(mpq_srcptr, mpz_srcptr)’:
+/usr/local/include/gmpxx.h:1061:12: error: ‘mpq_cmp_z’ was not declared in this scope
+   { return mpq_cmp_z(q, z) < 0; }
+            ^~~~~~~~~
+/usr/local/include/gmpxx.h:1061:12: note: suggested alternative: ‘mpz_cmp_d’
+   { return mpq_cmp_z(q, z) < 0; }
+            ^~~~~~~~~
+            mpz_cmp_d
+/usr/local/include/gmpxx.h: In static member function ‘static bool __gmp_binary_less::eval(mpz_srcptr, mpq_srcptr)’:
+/usr/local/include/gmpxx.h:1063:12: error: ‘mpq_cmp_z’ was not declared in this scope
+   { return mpq_cmp_z(q, z) > 0; }
+            ^~~~~~~~~
+/usr/local/include/gmpxx.h:1063:12: note: suggested alternative: ‘mpz_cmp_d’
+   { return mpq_cmp_z(q, z) > 0; }
+            ^~~~~~~~~
+            mpz_cmp_d
+/usr/local/include/gmpxx.h: In static member function ‘static bool __gmp_binary_less::eval(mpf_srcptr, mpz_srcptr)’:
+/usr/local/include/gmpxx.h:1080:12: error: ‘mpf_cmp_z’ was not declared in this scope
+   { return mpf_cmp_z(f, z) < 0; }
+            ^~~~~~~~~
+/usr/local/include/gmpxx.h:1080:12: note: suggested alternative: ‘mpf_cmp_d’
+   { return mpf_cmp_z(f, z) < 0; }
+            ^~~~~~~~~
+            mpf_cmp_d
+/usr/local/include/gmpxx.h: In static member function ‘static bool __gmp_binary_less::eval(mpz_srcptr, mpf_srcptr)’:
+/usr/local/include/gmpxx.h:1082:12: error: ‘mpf_cmp_z’ was not declared in this scope
+   { return mpf_cmp_z(f, z) > 0; }
+            ^~~~~~~~~
+/usr/local/include/gmpxx.h:1082:12: note: suggested alternative: ‘mpf_cmp_d’
+   { return mpf_cmp_z(f, z) > 0; }
+            ^~~~~~~~~
+            mpf_cmp_d
+/usr/local/include/gmpxx.h: In static member function ‘static void __gmp_primorial_function::eval(mpz_ptr, long unsigned int)’:
+/usr/local/include/gmpxx.h:1263:50: error: ‘mpz_primorial_ui’ was not declared in this scope
+   static void eval(mpz_ptr z, unsigned long l) { mpz_primorial_ui(z, l); }
+                                                  ^~~~~~~~~~~~~~~~
+/usr/local/include/gmpxx.h:1263:50: note: suggested alternative: ‘mpz_mdivmod_ui’
+   static void eval(mpz_ptr z, unsigned long l) { mpz_primorial_ui(z, l); }
+                                                  ^~~~~~~~~~~~~~~~
+                                                  mpz_mdivmod_ui
+make: *** [csim.mk:85: obj/Point.o] Error 1
+ERROR: [SIM 211-100] 'csim_design' failed: compilation error(s).
+INFO: [SIM 211-3] *************** CSIM finish ***************
+INFO: [HLS 200-111] Finished Command csim_design CPU user time: 0.18 seconds. CPU system time: 0.09 seconds. Elapsed time: 0.27 seconds; current allocated memory: 0.000 MB.
+4
+    while executing
+"source build_point_ops.tcl"
+    ("uplevel" body line 1)
+    invoked from within
+"uplevel \#0 [list source $arg] "
+
+INFO: [HLS 200-112] Total CPU user time: 0.93 seconds. Total CPU system time: 0.28 seconds. Total elapsed time: 11.42 seconds; peak allocated memory: 319.797 MB.
+INFO: [Common 17-206] Exiting vitis_hls at Wed Jul  8 15:30:07 2026...
